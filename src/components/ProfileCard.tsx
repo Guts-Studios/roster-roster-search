@@ -4,7 +4,7 @@ import { Person } from "../types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Shield } from "lucide-react";
 
 interface ProfileCardProps {
   person: Person;
@@ -22,19 +22,22 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     : undefined;
 
   return (
-    <Card className="w-full hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center gap-4 pb-2">
-        <Avatar className="h-12 w-12">
+    <Card className="w-full hover:shadow-md transition-shadow border-police-gray/20">
+      <CardHeader className="flex flex-row items-center gap-4 pb-2 bg-gradient-to-r from-police-blue/5 to-police-blue/0">
+        <Avatar className="h-12 w-12 bg-police-blue text-white border-2 border-police-gold">
           {person.imageUrl && <AvatarImage src={person.imageUrl} alt={person.name} />}
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="bg-police-blue text-white">{initials}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold">{person.name}</h3>
+          <h3 className="text-lg font-semibold text-police-navy">{person.name}</h3>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs border-police-gold text-police-navy bg-police-badge/10">
               {person.badgeNumber}
             </Badge>
-            {person.rank && <span className="text-sm text-muted-foreground">{person.rank}</span>}
+            {person.rank && <span className="text-sm text-muted-foreground flex items-center gap-1">
+              <Shield size={12} className="text-police-blue" />
+              {person.rank}
+            </span>}
           </div>
         </div>
       </CardHeader>
@@ -53,7 +56,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
           {person.status && (
             <div>
               <span className="font-medium">Status:</span>{" "}
-              <span className={person.status === "Active" ? "text-green-600" : "text-red-600"}>
+              <span className={person.status === "Active" ? "text-green-600" : "text-police-red"}>
                 {person.status}
               </span>
             </div>
@@ -61,7 +64,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
           {formattedSalary && (
             <div className="col-span-2 flex items-center gap-1">
               <span className="font-medium">Salary:</span>{" "}
-              <span className="flex items-center text-green-700">
+              <span className="flex items-center text-police-blue">
                 <DollarSign size={14} className="inline mr-0.5" />
                 {formattedSalary}
               </span>
@@ -70,7 +73,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
           {person.email && (
             <div className="col-span-2 truncate">
               <span className="font-medium">Email:</span>{" "}
-              <a href={`mailto:${person.email}`} className="text-blue-600 hover:underline">
+              <a href={`mailto:${person.email}`} className="text-police-lightBlue hover:underline">
                 {person.email}
               </a>
             </div>
