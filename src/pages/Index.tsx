@@ -9,9 +9,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Personnel Roster Database</h1>
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold mb-4">Personnel Search</h2>
           <p className="text-gray-600 mb-6">
             Search the roster by name or badge number to find personnel information
           </p>

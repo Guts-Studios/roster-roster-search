@@ -43,6 +43,15 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 210 50% 25%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Police theme specific colors */
+    --police-blue: 210 100% 20%;
+    --police-blue-light: 210 70% 30%;
+    --police-navy: 215 50% 25%;
+    --police-gold: 45 90% 50%;
+    --police-red: 0 70% 45%;
+    --police-gray: 220 10% 50%;
+    --police-badge: 45 80% 60%;
   }
 
   .dark {
