@@ -11,7 +11,8 @@ export const rosterData: Person[] = [
     department: "Operations",
     email: "john.doe@example.com",
     phone: "(555) 123-4567",
-    position: "Shift Supervisor",
+    division: "Field Operations", // Changed from position to division
+    salary: 78500, // Added salary
     hireDate: "2018-05-15",
     status: "Active",
     imageUrl: "/placeholder.svg"
@@ -24,7 +25,8 @@ export const rosterData: Person[] = [
     department: "Patrol",
     email: "jane.smith@example.com",
     phone: "(555) 123-4568",
-    position: "Patrol Officer",
+    division: "South District", // Changed from position to division
+    salary: 65000, // Added salary
     hireDate: "2019-03-22",
     status: "Active",
     imageUrl: "/placeholder.svg"
@@ -37,7 +39,8 @@ export const rosterData: Person[] = [
     department: "Investigations",
     email: "robert.johnson@example.com",
     phone: "(555) 123-4569",
-    position: "Detective",
+    division: "Criminal Investigations", // Changed from position to division
+    salary: 82000, // Added salary
     hireDate: "2015-11-08",
     status: "Active",
     imageUrl: "/placeholder.svg"
@@ -50,7 +53,8 @@ export const rosterData: Person[] = [
     department: "Special Units",
     email: "emily.davis@example.com",
     phone: "(555) 123-4570",
-    position: "K9 Handler",
+    division: "K9 Unit", // Changed from position to division
+    salary: 68500, // Added salary
     hireDate: "2020-01-15",
     status: "Active",
     imageUrl: "/placeholder.svg"
@@ -63,7 +67,8 @@ export const rosterData: Person[] = [
     department: "Administration",
     email: "michael.wilson@example.com",
     phone: "(555) 123-4571",
-    position: "Department Head",
+    division: "Command Staff", // Changed from position to division
+    salary: 105000, // Added salary
     hireDate: "2010-07-22",
     status: "Active",
     imageUrl: "/placeholder.svg"

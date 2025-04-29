@@ -7,7 +7,8 @@ export interface Person {
   department?: string;
   email?: string;
   phone?: string;
-  position?: string;
+  division?: string; // Changed from position to division
+  salary?: number; // Added salary field
   hireDate?: string;
   status?: string;
   imageUrl?: string;

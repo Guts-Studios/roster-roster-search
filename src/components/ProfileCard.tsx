@@ -4,6 +4,7 @@ import { Person } from "../types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { DollarSign } from "lucide-react";
 
 interface ProfileCardProps {
   person: Person;
@@ -14,6 +15,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     .split(" ")
     .map((n) => n[0])
     .join("");
+
+  // Format salary with commas and dollar sign
+  const formattedSalary = person.salary 
+    ? `$${person.salary.toLocaleString()}`
+    : undefined;
 
   return (
     <Card className="w-full hover:shadow-md transition-shadow">
@@ -34,9 +40,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
       </CardHeader>
       <CardContent className="pt-2">
         <div className="grid grid-cols-2 gap-y-2 text-sm">
-          {person.position && (
+          {person.division && (
             <div className="col-span-2">
-              <span className="font-medium">Position:</span> {person.position}
+              <span className="font-medium">Division:</span> {person.division}
             </div>
           )}
           {person.department && (
@@ -49,6 +55,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
               <span className="font-medium">Status:</span>{" "}
               <span className={person.status === "Active" ? "text-green-600" : "text-red-600"}>
                 {person.status}
+              </span>
+            </div>
+          )}
+          {formattedSalary && (
+            <div className="col-span-2 flex items-center gap-1">
+              <span className="font-medium">Salary:</span>{" "}
+              <span className="flex items-center text-green-700">
+                <DollarSign size={14} className="inline mr-0.5" />
+                {formattedSalary}
               </span>
             </div>
           )}
