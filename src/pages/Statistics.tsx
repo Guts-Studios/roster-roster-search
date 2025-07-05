@@ -9,6 +9,7 @@ import { DollarSign, Users, TrendingUp, BarChart3, RefreshCw } from "lucide-reac
 import { useTopSalaries, usePersonnelAggregates, useUniqueValues, StatsFilters } from "../hooks/usePersonnelStats";
 import { getFullName, getTotalCompensation } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { loadSampleData, checkDataCount } from "@/utils/loadPersonnelData";
 
 const Statistics = () => {
   const [filters, setFilters] = useState<StatsFilters>({
@@ -55,6 +56,43 @@ const Statistics = () => {
     }
   };
 
+  const handleLoadSampleData = async () => {
+    try {
+      const result = await loadSampleData();
+      if (result.success) {
+        await handleRefresh();
+        toast({
+          title: "Sample Data Loaded",
+          description: "Sample personnel data has been loaded successfully.",
+        });
+      } else {
+        throw result.error;
+      }
+    } catch (error) {
+      toast({
+        title: "Load Failed",
+        description: "Failed to load sample data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCheckData = async () => {
+    try {
+      const result = await checkDataCount();
+      toast({
+        title: "Data Count Check",
+        description: `Current personnel records: ${result.count || 0}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Check Failed",
+        description: "Failed to check data count.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
@@ -64,10 +102,18 @@ const Statistics = () => {
               <h1 className="text-3xl font-bold text-police-navy mb-2">Personnel Statistics</h1>
               <p className="text-gray-600">Comprehensive analytics and insights into personnel compensation data</p>
             </div>
-            <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Refresh Data
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleCheckData} variant="outline" size="sm">
+                Check Data Count
+              </Button>
+              <Button onClick={handleLoadSampleData} variant="outline" size="sm">
+                Load Sample Data
+              </Button>
+              <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Refresh Data
+              </Button>
+            </div>
           </div>
         </div>
 
