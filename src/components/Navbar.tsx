@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, Info } from "lucide-react";
+import { Home, Info, BarChart3 } from "lucide-react";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,18 @@ const Navbar = () => {
                     >
                       <Home size={16} />
                       <span>Home</span>
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/statistics">
+                    <NavigationMenuLink
+                      className={cn(
+                        "flex items-center gap-1 px-4 py-2 text-sm text-white hover:bg-police-blue-light rounded-md transition-colors",
+                      )}
+                    >
+                      <BarChart3 size={16} />
+                      <span>Statistics</span>
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
