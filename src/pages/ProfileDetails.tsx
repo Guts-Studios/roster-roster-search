@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield, DollarSign } from "lucide-react";
+import { getPhotoUrl } from "@/utils/photoUtils";
 
 const ProfileDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -56,6 +57,7 @@ const ProfileDetails = () => {
   const fullName = getFullName(person);
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
+  const photoUrl = getPhotoUrl(person);
   
   // Format compensation with commas and dollar sign
   const formattedCompensation = totalCompensation > 0 
@@ -74,7 +76,8 @@ const ProfileDetails = () => {
         <Card className="w-full max-w-4xl mx-auto border-police-blue/20">
           <CardHeader className="bg-gradient-to-r from-police-blue/10 to-police-blue/5 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <Avatar className="h-24 w-24 border-4 border-police-gold bg-police-blue text-white">
+               <Avatar className="h-24 w-24 border-4 border-police-gold bg-police-blue text-white">
+                {photoUrl && <AvatarImage src={photoUrl} alt={fullName} />}
                 <AvatarFallback className="text-2xl bg-police-blue">{initials}</AvatarFallback>
               </Avatar>
               
