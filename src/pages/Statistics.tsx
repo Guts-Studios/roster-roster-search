@@ -5,19 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { DollarSign, Users, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
 import { useTopSalaries, usePersonnelAggregates, useUniqueValues, StatsFilters } from "../hooks/usePersonnelStats";
 import { getFullName, getTotalCompensation } from "../types";
+import { useToast } from "@/hooks/use-toast";
 
 const Statistics = () => {
   const [filters, setFilters] = useState<StatsFilters>({
     limit: 5,
     sortBy: 'total_compensation'
   });
+  const { toast } = useToast();
 
-  const { data: topSalaries, isLoading: loadingTop } = useTopSalaries(filters);
-  const { data: aggregates, isLoading: loadingAggs } = usePersonnelAggregates();
-  const { data: uniqueValues } = useUniqueValues();
+  const { data: topSalaries, isLoading: loadingTop, refetch: refetchTopSalaries } = useTopSalaries(filters);
+  const { data: aggregates, isLoading: loadingAggs, refetch: refetchAggregates } = usePersonnelAggregates();
+  const { data: uniqueValues, refetch: refetchUniqueValues } = useUniqueValues();
 
   const updateFilter = (key: keyof StatsFilters, value: any) => {
     setFilters(prev => ({
@@ -33,12 +35,40 @@ const Statistics = () => {
     });
   };
 
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([
+        refetchTopSalaries(),
+        refetchAggregates(),
+        refetchUniqueValues()
+      ]);
+      toast({
+        title: "Data Refreshed",
+        description: "Personnel statistics have been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-police-navy mb-2">Personnel Statistics</h1>
-          <p className="text-gray-600">Comprehensive analytics and insights into personnel compensation data</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-police-navy mb-2">Personnel Statistics</h1>
+              <p className="text-gray-600">Comprehensive analytics and insights into personnel compensation data</p>
+            </div>
+            <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh Data
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
