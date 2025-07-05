@@ -1,12 +1,39 @@
 
 import React, { useState } from "react";
-import SearchBar from "../components/SearchBar";
 import RosterList from "../components/RosterList";
-import { usePersonnelSearch } from "../hooks/usePersonnel";
+import PersonnelFiltersComponent from "../components/PersonnelFilters";
+import Pagination from "../components/Pagination";
+import { useAdvancedPersonnel, usePersonnelFilterOptions, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
 
 const Index = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const { data: personnel = [], isLoading, error } = usePersonnelSearch(searchTerm);
+  const [filters, setFilters] = useState<PersonnelFilters>({
+    searchTerm: '',
+    sortBy: 'name',
+    sortOrder: 'asc',
+    page: 1,
+    pageSize: 25,
+  });
+
+  const { data: personnelResponse, isLoading, error } = useAdvancedPersonnel(filters);
+  const { data: filterOptions } = usePersonnelFilterOptions();
+
+  const handleFiltersChange = (newFilters: Partial<PersonnelFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      searchTerm: '',
+      sortBy: 'name',
+      sortOrder: 'asc',
+      page: 1,
+      pageSize: 25,
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters(prev => ({ ...prev, page }));
+  };
 
   if (error) {
     return (
@@ -27,24 +54,46 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold mb-4">Personnel Search</h2>
-          <p className="text-gray-600 mb-6">
-            Search the roster by name or badge number to find personnel information
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-police-navy mb-2">Personnel Database</h1>
+          <p className="text-gray-600">
+            Search and filter personnel records with advanced sorting and pagination options
           </p>
-          <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
 
-        <div className="mt-8">
+        <PersonnelFiltersComponent
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          onClearFilters={handleClearFilters}
+          divisions={filterOptions?.divisions || []}
+          classifications={filterOptions?.classifications || []}
+        />
+
+        <div className="mt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">
-              Roster {searchTerm && `- Search Results for "${searchTerm}"`}
+              Personnel Records
+              {filters.searchTerm && ` - Results for "${filters.searchTerm}"`}
             </h2>
             <div className="text-sm text-gray-500">
-              {isLoading ? "Loading..." : `Showing ${personnel.length} personnel records`}
+              {isLoading ? "Loading..." : `${personnelResponse?.totalCount || 0} total records`}
             </div>
           </div>
-          <RosterList personnel={personnel} isLoading={isLoading} />
+          
+          <RosterList 
+            personnel={personnelResponse?.data || []} 
+            isLoading={isLoading} 
+          />
+          
+          {personnelResponse && (
+            <Pagination
+              currentPage={personnelResponse.currentPage}
+              totalPages={personnelResponse.totalPages}
+              totalCount={personnelResponse.totalCount}
+              pageSize={filters.pageSize}
+              onPageChange={handlePageChange}
+            />
+          )}
         </div>
       </div>
     </div>
