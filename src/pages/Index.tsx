@@ -2,10 +2,27 @@
 import React, { useState } from "react";
 import SearchBar from "../components/SearchBar";
 import RosterList from "../components/RosterList";
-import { rosterData } from "../data/rosterData";
+import { usePersonnelSearch } from "../hooks/usePersonnel";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: personnel = [], isLoading, error } = usePersonnelSearch(searchTerm);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-6">
+            You need to be authenticated to view personnel records.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please contact your administrator to set up authentication.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,10 +41,10 @@ const Index = () => {
               Roster {searchTerm && `- Search Results for "${searchTerm}"`}
             </h2>
             <div className="text-sm text-gray-500">
-              Showing {rosterData.length} personnel records
+              {isLoading ? "Loading..." : `Showing ${personnel.length} personnel records`}
             </div>
           </div>
-          <RosterList people={rosterData} searchTerm={searchTerm} />
+          <RosterList personnel={personnel} isLoading={isLoading} />
         </div>
       </div>
     </div>

@@ -1,24 +1,24 @@
 
 import React from "react";
-import { Person } from "../types";
+import { Personnel } from "../types";
 import ProfileCard from "./ProfileCard";
 
 interface RosterListProps {
-  people: Person[];
-  searchTerm: string;
+  personnel: Personnel[];
+  isLoading: boolean;
 }
 
-const RosterList: React.FC<RosterListProps> = ({ people, searchTerm }) => {
-  // Filter the people based on the search term
-  const filteredPeople = people.filter((person) => {
-    const searchLower = searchTerm.toLowerCase();
+const RosterList: React.FC<RosterListProps> = ({ personnel, isLoading }) => {
+  if (isLoading) {
     return (
-      person.name.toLowerCase().includes(searchLower) ||
-      person.badgeNumber.toLowerCase().includes(searchLower)
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-police-blue"></div>
+        <p className="text-gray-500 mt-4">Loading personnel records...</p>
+      </div>
     );
-  });
+  }
 
-  if (filteredPeople.length === 0) {
+  if (personnel.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
         <p className="text-xl text-gray-500">No matching records found</p>
@@ -29,7 +29,7 @@ const RosterList: React.FC<RosterListProps> = ({ people, searchTerm }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredPeople.map((person) => (
+      {personnel.map((person) => (
         <ProfileCard key={person.id} person={person} />
       ))}
     </div>

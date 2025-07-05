@@ -9,7 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      personnel: {
+        Row: {
+          badge_number: string | null
+          classification: string | null
+          created_at: string
+          division: string | null
+          first_name: string
+          health_dental_vision: number | null
+          id: string
+          last_name: string
+          other_pay: number | null
+          overtime: number | null
+          payout: number | null
+          premiums: number | null
+          regular_pay: number | null
+          updated_at: string
+        }
+        Insert: {
+          badge_number?: string | null
+          classification?: string | null
+          created_at?: string
+          division?: string | null
+          first_name: string
+          health_dental_vision?: number | null
+          id?: string
+          last_name: string
+          other_pay?: number | null
+          overtime?: number | null
+          payout?: number | null
+          premiums?: number | null
+          regular_pay?: number | null
+          updated_at?: string
+        }
+        Update: {
+          badge_number?: string | null
+          classification?: string | null
+          created_at?: string
+          division?: string | null
+          first_name?: string
+          health_dental_vision?: number | null
+          id?: string
+          last_name?: string
+          other_pay?: number | null
+          overtime?: number | null
+          payout?: number | null
+          premiums?: number | null
+          regular_pay?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

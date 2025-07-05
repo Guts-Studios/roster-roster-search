@@ -1,25 +1,24 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Person } from "../types";
+import { Personnel, getFullName, getTotalCompensation } from "../types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Shield } from "lucide-react";
 
 interface ProfileCardProps {
-  person: Person;
+  person: Personnel;
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
-  const initials = person.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("");
-
-  // Format salary with commas and dollar sign
-  const formattedSalary = person.salary 
-    ? `$${person.salary.toLocaleString()}`
+  const fullName = getFullName(person);
+  const initials = `${person.first_name[0]}${person.last_name[0]}`;
+  const totalCompensation = getTotalCompensation(person);
+  
+  // Format compensation with commas and dollar sign
+  const formattedCompensation = totalCompensation > 0 
+    ? `$${totalCompensation.toLocaleString()}`
     : undefined;
 
   return (
@@ -27,18 +26,17 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
       <Card className="w-full hover:shadow-md transition-shadow border-police-gray/20 cursor-pointer">
         <CardHeader className="flex flex-row items-center gap-4 pb-2 bg-gradient-to-r from-police-blue/5 to-police-blue/0">
           <Avatar className="h-12 w-12 bg-police-blue text-white border-2 border-police-gold">
-            {person.imageUrl && <AvatarImage src={person.imageUrl} alt={person.name} />}
             <AvatarFallback className="bg-police-blue text-white">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold text-police-navy">{person.name}</h3>
+            <h3 className="text-lg font-semibold text-police-navy">{fullName}</h3>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs border-police-gold text-police-navy bg-police-badge/10">
-                {person.badgeNumber}
-              </Badge>
-              {person.rank && <span className="text-sm text-muted-foreground flex items-center gap-1">
+              {person.badge_number && <Badge variant="outline" className="text-xs border-police-gold text-police-navy bg-police-badge/10">
+                {person.badge_number}
+              </Badge>}
+              {person.classification && <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <Shield size={12} className="text-police-blue" />
-                {person.rank}
+                {person.classification}
               </span>}
             </div>
           </div>
@@ -50,49 +48,25 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
                 <span className="font-medium">Division:</span> {person.division}
               </div>
             )}
-            {person.department && (
-              <div>
-                <span className="font-medium">Department:</span> {person.department}
-              </div>
-            )}
-            {person.status && (
-              <div>
-                <span className="font-medium">Status:</span>{" "}
-                <span className={person.status === "Active" ? "text-green-600" : "text-police-red"}>
-                  {person.status}
-                </span>
-              </div>
-            )}
-            {formattedSalary && (
+            {formattedCompensation && (
               <div className="col-span-2 flex items-center gap-1">
-                <span className="font-medium">Salary:</span>{" "}
+                <span className="font-medium">Total Compensation:</span>{" "}
                 <span className="flex items-center text-police-blue">
                   <DollarSign size={14} className="inline mr-0.5" />
-                  {formattedSalary}
+                  {formattedCompensation}
                 </span>
               </div>
             )}
-            {person.email && (
-              <div className="col-span-2 truncate">
-                <span className="font-medium">Email:</span>{" "}
-                <a 
-                  href={`mailto:${person.email}`} 
-                  className="text-police-lightBlue hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {person.email}
-                </a>
+            {person.regular_pay && (
+              <div>
+                <span className="font-medium">Base Pay:</span>{" "}
+                ${person.regular_pay.toLocaleString()}
               </div>
             )}
-            {person.phone && (
+            {person.overtime && person.overtime > 0 && (
               <div>
-                <span className="font-medium">Phone:</span> {person.phone}
-              </div>
-            )}
-            {person.hireDate && (
-              <div>
-                <span className="font-medium">Hired:</span>{" "}
-                {new Date(person.hireDate).toLocaleDateString()}
+                <span className="font-medium">Overtime:</span>{" "}
+                ${person.overtime.toLocaleString()}
               </div>
             )}
           </div>

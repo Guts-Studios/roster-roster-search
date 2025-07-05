@@ -1,15 +1,31 @@
 
-export interface Person {
+export interface Personnel {
   id: string;
-  name: string;
-  badgeNumber: string;
-  rank?: string;
-  department?: string;
-  email?: string;
-  phone?: string;
-  division?: string; // Changed from position to division
-  salary?: number; // Added salary field
-  hireDate?: string;
-  status?: string;
-  imageUrl?: string;
+  last_name: string;
+  first_name: string;
+  classification?: string;
+  badge_number?: string;
+  division?: string;
+  regular_pay?: number;
+  premiums?: number;
+  overtime?: number;
+  payout?: number;
+  other_pay?: number;
+  health_dental_vision?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Helper function to get full name
+export const getFullName = (person: Personnel): string => {
+  return `${person.first_name} ${person.last_name}`;
+}
+
+// Helper function to get total compensation
+export const getTotalCompensation = (person: Personnel): number => {
+  return (person.regular_pay || 0) + 
+         (person.premiums || 0) + 
+         (person.overtime || 0) + 
+         (person.payout || 0) + 
+         (person.other_pay || 0);
 }
