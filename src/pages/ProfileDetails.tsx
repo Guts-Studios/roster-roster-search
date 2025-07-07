@@ -77,7 +77,7 @@ const ProfileDetails = () => {
           <CardHeader className="bg-gradient-to-r from-inadvertent-yellow/10 to-inadvertent-yellow/5 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                <Avatar className="h-24 w-24 border-4 border-inadvertent-yellow bg-inadvertent-yellow text-inadvertent-dark-text">
-                {photoUrl && <AvatarImage src={photoUrl} alt={fullName} />}
+                {photoUrl && <AvatarImage src={photoUrl} alt={fullName} className="object-cover" />}
                 <AvatarFallback className="text-2xl bg-inadvertent-yellow text-inadvertent-dark-text">{initials}</AvatarFallback>
               </Avatar>
               
