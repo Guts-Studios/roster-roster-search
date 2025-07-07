@@ -12,7 +12,6 @@ interface PersonnelFiltersProps {
   onFiltersChange: (filters: Partial<PersonnelFilters>) => void;
   onClearFilters: () => void;
   divisions: string[];
-  classifications: string[];
 }
 
 const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
@@ -20,7 +19,6 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
   onFiltersChange,
   onClearFilters,
   divisions,
-  classifications,
 }) => {
   return (
     <Card className="mb-6">
@@ -31,16 +29,42 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {/* Search Term */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {/* First Name */}
           <div>
-            <Label htmlFor="search">Search</Label>
+            <Label htmlFor="firstName">First Name</Label>
             <Input
-              id="search"
+              id="firstName"
               type="text"
-              placeholder="Name or badge..."
-              value={filters.searchTerm || ''}
-              onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
+              placeholder="First name..."
+              value={filters.firstName || ''}
+              onChange={(e) => onFiltersChange({ firstName: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Last name..."
+              value={filters.lastName || ''}
+              onChange={(e) => onFiltersChange({ lastName: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+
+          {/* Badge Number */}
+          <div>
+            <Label htmlFor="badgeNumber">Badge Number</Label>
+            <Input
+              id="badgeNumber"
+              type="text"
+              placeholder="Badge number..."
+              value={filters.badgeNumber || ''}
+              onChange={(e) => onFiltersChange({ badgeNumber: e.target.value })}
               className="mt-1"
             />
           </div>
@@ -61,22 +85,6 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             </Select>
           </div>
 
-          {/* Classification Filter */}
-          <div>
-            <Label htmlFor="classification">Classification</Label>
-            <Select value={filters.classification || 'all'} onValueChange={(value) => onFiltersChange({ classification: value === 'all' ? undefined : value })}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="All Classifications" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg max-h-48 overflow-y-auto z-50">
-                <SelectItem value="all">All Classifications</SelectItem>
-                {classifications.map((classification) => (
-                  <SelectItem key={classification} value={classification}>{classification}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Sort By */}
           <div>
             <Label htmlFor="sortBy">Sort By</Label>
@@ -86,7 +94,6 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
               </SelectTrigger>
               <SelectContent className="bg-white border shadow-lg z-50">
                 <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="classification">Classification</SelectItem>
                 <SelectItem value="regular_pay">Base Pay</SelectItem>
                 <SelectItem value="overtime">Overtime</SelectItem>
                 <SelectItem value="total_compensation">Total Compensation</SelectItem>

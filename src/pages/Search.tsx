@@ -17,7 +17,9 @@ const Search = () => {
   const [isVerifying, setIsVerifying] = useState(false);
 
   const [filters, setFilters] = useState<PersonnelFilters>({
-    searchTerm: '',
+    firstName: '',
+    lastName: '',
+    badgeNumber: '',
     sortBy: 'name',
     sortOrder: 'asc',
     page: 1,
@@ -25,7 +27,7 @@ const Search = () => {
   });
 
   const { data: personnelResponse, isLoading, error } = useAdvancedPersonnel(
-    isAuthenticated ? filters : { ...filters, searchTerm: '' }
+    isAuthenticated ? filters : { ...filters, firstName: '', lastName: '', badgeNumber: '' }
   );
   const { data: filterOptions } = usePersonnelFilterOptions();
 
@@ -55,7 +57,9 @@ const Search = () => {
 
   const handleClearFilters = () => {
     setFilters({
-      searchTerm: '',
+      firstName: '',
+      lastName: '',
+      badgeNumber: '',
       sortBy: 'name',
       sortOrder: 'asc',
       page: 1,
@@ -172,14 +176,14 @@ const Search = () => {
           onFiltersChange={handleFiltersChange}
           onClearFilters={handleClearFilters}
           divisions={filterOptions?.divisions || []}
-          classifications={filterOptions?.classifications || []}
         />
 
         <div className="mt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-foreground">
               Personnel Records
-              {filters.searchTerm && ` - Results for "${filters.searchTerm}"`}
+              {(filters.firstName || filters.lastName || filters.badgeNumber) &&
+                ` - Filtered Results`}
             </h2>
             <div className="text-sm text-muted-foreground">
               {isLoading ? "Loading..." : `${personnelResponse?.totalCount || 0} total records`}

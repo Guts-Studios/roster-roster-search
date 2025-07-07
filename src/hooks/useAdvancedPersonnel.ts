@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Personnel, getTotalCompensation } from "@/types";
 
 export interface PersonnelFilters {
-  searchTerm?: string;
+  firstName?: string;
+  lastName?: string;
+  badgeNumber?: string;
   division?: string;
-  classification?: string;
-  sortBy: 'name' | 'classification' | 'regular_pay' | 'overtime' | 'total_compensation';
+  sortBy: 'name' | 'regular_pay' | 'overtime' | 'total_compensation';
   sortOrder: 'asc' | 'desc';
   page: number;
   pageSize: number;
@@ -27,9 +28,17 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         .from("personnel")
         .select("*");
 
-      // Apply search filter
-      if (filters.searchTerm && filters.searchTerm.trim()) {
-        query = query.or(`last_name.ilike.%${filters.searchTerm}%,first_name.ilike.%${filters.searchTerm}%,badge_number.ilike.%${filters.searchTerm}%,division.ilike.%${filters.searchTerm}%`);
+      // Apply individual search filters
+      if (filters.firstName && filters.firstName.trim()) {
+        query = query.ilike("first_name", `%${filters.firstName}%`);
+      }
+      
+      if (filters.lastName && filters.lastName.trim()) {
+        query = query.ilike("last_name", `%${filters.lastName}%`);
+      }
+      
+      if (filters.badgeNumber && filters.badgeNumber.trim()) {
+        query = query.ilike("badge_number", `%${filters.badgeNumber}%`);
       }
 
       // Apply division filter
@@ -37,26 +46,26 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         query = query.eq("division", filters.division);
       }
 
-      // Apply classification filter
-      if (filters.classification) {
-        query = query.eq("classification", filters.classification);
-      }
-
       // Get total count for pagination with simpler approach
       let countQuery = supabase
         .from("personnel")
         .select("*", { count: 'exact', head: true });
 
-      if (filters.searchTerm && filters.searchTerm.trim()) {
-        countQuery = countQuery.or(`last_name.ilike.%${filters.searchTerm}%,first_name.ilike.%${filters.searchTerm}%,badge_number.ilike.%${filters.searchTerm}%,division.ilike.%${filters.searchTerm}%`);
+      // Apply same filters to count query
+      if (filters.firstName && filters.firstName.trim()) {
+        countQuery = countQuery.ilike("first_name", `%${filters.firstName}%`);
+      }
+      
+      if (filters.lastName && filters.lastName.trim()) {
+        countQuery = countQuery.ilike("last_name", `%${filters.lastName}%`);
+      }
+      
+      if (filters.badgeNumber && filters.badgeNumber.trim()) {
+        countQuery = countQuery.ilike("badge_number", `%${filters.badgeNumber}%`);
       }
       
       if (filters.division) {
         countQuery = countQuery.eq("division", filters.division);
-      }
-      
-      if (filters.classification) {
-        countQuery = countQuery.eq("classification", filters.classification);
       }
 
       const { count } = await countQuery;
@@ -64,8 +73,6 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
       // Apply sorting (server-side for database fields)
       if (filters.sortBy === 'name') {
         query = query.order('last_name', { ascending: filters.sortOrder === 'asc' });
-      } else if (filters.sortBy === 'classification') {
-        query = query.order('classification', { ascending: filters.sortOrder === 'asc' });
       } else if (filters.sortBy === 'regular_pay') {
         query = query.order('regular_pay', { ascending: filters.sortOrder === 'asc' });
       } else if (filters.sortBy === 'overtime') {
