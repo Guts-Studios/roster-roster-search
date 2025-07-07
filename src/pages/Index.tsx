@@ -59,7 +59,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-4 sm:py-6">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Personnel Database</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">No Secret Police</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Search and filter personnel records with advanced sorting and pagination options
           </p>

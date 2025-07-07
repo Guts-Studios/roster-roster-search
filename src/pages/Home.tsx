@@ -11,10 +11,10 @@ const Home = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6">
-            Personnel Database
+            No Secret Police
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            A comprehensive database for tracking and analyzing personnel records with advanced search capabilities and detailed statistics.
+            A project by inadvertent
           </p>
           <div className="flex justify-center gap-4">
             <Link to="/search">

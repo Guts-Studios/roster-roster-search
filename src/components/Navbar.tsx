@@ -30,7 +30,7 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <h1 className="text-lg sm:text-xl font-bold text-foreground">
-              Personnel Database
+              No Secret Police
             </h1>
           </div>
 
