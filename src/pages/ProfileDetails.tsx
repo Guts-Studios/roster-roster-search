@@ -76,16 +76,25 @@ const ProfileDetails = () => {
         <Card className="w-full max-w-4xl mx-auto border-border bg-card">
           <CardHeader className="bg-gradient-to-r from-inadvertent-yellow/10 to-inadvertent-yellow/5 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-               <Avatar className="h-24 w-24 border-4 border-inadvertent-yellow bg-inadvertent-yellow text-inadvertent-dark-text">
-                {photoUrl && <AvatarImage src={photoUrl} alt={fullName} className="object-cover" />}
-                <AvatarFallback className="text-2xl bg-inadvertent-yellow text-inadvertent-dark-text">{initials}</AvatarFallback>
-              </Avatar>
+              <div className="relative h-32 w-24 sm:h-40 sm:w-32 bg-inadvertent-yellow border-4 border-inadvertent-yellow flex-shrink-0 rounded-lg overflow-hidden">
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt={fullName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-inadvertent-yellow flex items-center justify-center">
+                    <span className="text-inadvertent-dark-text font-bold text-xl sm:text-2xl">{initials}</span>
+                  </div>
+                )}
+              </div>
               
               <div className="flex flex-col items-center sm:items-start">
                 <h1 className="text-3xl font-bold text-foreground text-center sm:text-left">{fullName}</h1>
                 <div className="flex flex-wrap items-center gap-3 mt-2 justify-center sm:justify-start">
                   {person.badge_number && <Badge variant="outline" className="text-sm border-inadvertent-yellow bg-inadvertent-yellow/10 px-3 py-1">
-                    {person.badge_number}
+                    Badge #{person.badge_number}
                   </Badge>}
                   {person.classification && (
                     <span className="text-sm flex items-center gap-1 bg-inadvertent-yellow/10 px-3 py-1 rounded-full">
