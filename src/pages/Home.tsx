@@ -102,21 +102,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            Access the personnel database to search records, view statistics, and analyze data.
-          </p>
-          <Link to="/search">
-            <Button size="lg" className="bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover">
-              <Search className="mr-2 h-5 w-5" />
-              Enter Database
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   );
