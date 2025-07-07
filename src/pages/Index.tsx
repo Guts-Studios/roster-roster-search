@@ -57,10 +57,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Personnel Database</h1>
-          <p className="text-muted-foreground">
+      <div className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Personnel Database</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Search and filter personnel records with advanced sorting and pagination options
           </p>
         </div>
@@ -72,14 +72,14 @@ const Index = () => {
           divisions={filterOptions?.divisions || []}
         />
 
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-foreground">
+        <div className="mt-4 sm:mt-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
               Personnel Records
               {(filters.firstName || filters.lastName || filters.badgeNumber) &&
                 ` - Filtered Results`}
             </h2>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground">
               {isLoading ? "Loading..." : `${personnelResponse?.totalCount || 0} total records`}
             </div>
           </div>

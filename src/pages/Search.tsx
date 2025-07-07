@@ -151,22 +151,24 @@ const Search = () => {
   // Main search interface
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Personnel Search</h1>
-              <p className="text-muted-foreground">
+      <div className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Personnel Search</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Search and filter personnel records with advanced sorting and pagination options
               </p>
             </div>
             <Button
               variant="outline"
               onClick={() => setIsAuthenticated(false)}
-              className="border-border text-foreground hover:bg-muted"
+              className="border-border text-foreground hover:bg-muted flex-shrink-0 self-start sm:self-center"
+              size="sm"
             >
               <Lock className="mr-2 h-4 w-4" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
+              <span className="sm:hidden">Exit</span>
             </Button>
           </div>
         </div>
@@ -178,14 +180,14 @@ const Search = () => {
           divisions={filterOptions?.divisions || []}
         />
 
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-foreground">
+        <div className="mt-4 sm:mt-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
               Personnel Records
               {(filters.firstName || filters.lastName || filters.badgeNumber) &&
                 ` - Filtered Results`}
             </h2>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground">
               {isLoading ? "Loading..." : `${personnelResponse?.totalCount || 0} total records`}
             </div>
           </div>

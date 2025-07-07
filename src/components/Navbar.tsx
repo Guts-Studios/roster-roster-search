@@ -1,73 +1,92 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, Info, BarChart3, Search } from "lucide-react";
+import { Home, Info, BarChart3, Search, Menu, X } from "lucide-react";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  const navItems = [
+    { to: "/", icon: Home, label: "Home" },
+    { to: "/search", icon: Search, label: "Search" },
+    { to: "/statistics", icon: BarChart3, label: "Statistics" },
+    { to: "/about", icon: Info, label: "About" },
+  ];
+
   return (
     <header className="sticky top-0 z-10 w-full bg-inadvertent-dark-cream shadow-md border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-foreground mr-8">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">
               Personnel Database
             </h1>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:block">
             <NavigationMenu>
               <NavigationMenuList className="gap-2">
-                <NavigationMenuItem>
-                  <Link to="/">
-                    <NavigationMenuLink
-                      className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
-                      )}
-                    >
-                      <Home size={16} />
-                      <span>Home</span>
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/search">
-                    <NavigationMenuLink
-                      className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
-                      )}
-                    >
-                      <Search size={16} />
-                      <span>Search</span>
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/statistics">
-                    <NavigationMenuLink
-                      className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
-                      )}
-                    >
-                      <BarChart3 size={16} />
-                      <span>Statistics</span>
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/about">
-                    <NavigationMenuLink
-                      className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
-                      )}
-                    >
-                      <Info size={16} />
-                      <span>About</span>
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
+                {navItems.map(({ to, icon: Icon, label }) => (
+                  <NavigationMenuItem key={to}>
+                    <Link to={to}>
+                      <NavigationMenuLink
+                        className={cn(
+                          "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
+                        )}
+                      >
+                        <Icon size={16} />
+                        <span>{label}</span>
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                ))}
               </NavigationMenuList>
             </NavigationMenu>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleMobileMenu}
+              className="text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-inadvertent-dark-cream">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navItems.map(({ to, icon: Icon, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors block"
+                >
+                  <Icon size={16} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
