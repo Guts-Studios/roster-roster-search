@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -11,46 +10,17 @@ import { useTopSalaries, usePersonnelAggregates, useUniqueValues, StatsFilters }
 import { getFullName, getTotalCompensation } from "../types";
 import { useToast } from "@/hooks/use-toast";
 import { loadSampleData, checkDataCount } from "@/utils/loadPersonnelData";
-import { verifyPassword } from "../utils/auth";
 
 const Statistics = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-
   const [filters, setFilters] = useState<StatsFilters>({
     limit: 5,
     sortBy: 'total_compensation'
   });
   const { toast } = useToast();
 
-  const { data: topSalaries, isLoading: loadingTop, refetch: refetchTopSalaries } = useTopSalaries(
-    isAuthenticated ? filters : { ...filters, limit: 0 }
-  );
+  const { data: topSalaries, isLoading: loadingTop, refetch: refetchTopSalaries } = useTopSalaries(filters);
   const { data: aggregates, isLoading: loadingAggs, refetch: refetchAggregates } = usePersonnelAggregates();
   const { data: uniqueValues, refetch: refetchUniqueValues } = useUniqueValues();
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsVerifying(true);
-    setAuthError("");
-
-    try {
-      const isValid = await verifyPassword(password);
-      if (isValid) {
-        setIsAuthenticated(true);
-        setAuthError("");
-      } else {
-        setAuthError("Invalid password. Please try again.");
-      }
-    } catch (error) {
-      setAuthError("Authentication error. Please try again.");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
 
   const updateFilter = (key: keyof StatsFilters, value: string | number | undefined) => {
     setFilters(prev => ({
@@ -75,7 +45,7 @@ const Statistics = () => {
       ]);
       toast({
         title: "Data Refreshed",
-        description: "Personnel statistics have been updated successfully.",
+        description: "Public records statistics have been updated successfully.",
       });
     } catch (error) {
       toast({
@@ -93,7 +63,7 @@ const Statistics = () => {
         await handleRefresh();
         toast({
           title: "Sample Data Loaded",
-          description: "Sample personnel data has been loaded successfully.",
+          description: "Sample public records data has been loaded successfully.",
         });
       } else {
         throw result.error;
@@ -112,7 +82,7 @@ const Statistics = () => {
       const result = await checkDataCount();
       toast({
         title: "Data Count Check",
-        description: `Current personnel records: ${result.count || 0}`,
+        description: `Current public records: ${result.count || 0}`,
       });
     } catch (error) {
       toast({
@@ -123,97 +93,13 @@ const Statistics = () => {
     }
   };
 
-  // Password protection screen
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md bg-card border-border">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-foreground">
-              <Lock className="h-6 w-6 text-inadvertent-yellow" />
-              Secure Access Required
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Enter the password to access personnel statistics
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10 bg-input border-border text-foreground"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              {authError && (
-                <p className="text-sm text-destructive">{authError}</p>
-              )}
-              <Button 
-                type="submit" 
-                disabled={isVerifying}
-                className="w-full bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover disabled:opacity-50"
-              >
-                {isVerifying ? "Verifying..." : "Access Statistics"}
-              </Button>
-            </form>
-            <div className="mt-4 p-3 bg-muted rounded-md">
-              <p className="text-xs text-muted-foreground">
-                Password is securely hashed and verified.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Main statistics interface
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Personnel Statistics</h1>
-              <p className="text-muted-foreground">Comprehensive analytics and insights into personnel compensation data</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={handleCheckData} variant="outline" size="sm" className="border-border text-foreground hover:bg-muted">
-                Check Data Count
-              </Button>
-              <Button onClick={handleLoadSampleData} variant="outline" size="sm" className="border-border text-foreground hover:bg-muted">
-                Load Sample Data
-              </Button>
-              <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2 border-border text-foreground hover:bg-muted">
-                <RefreshCw className="h-4 w-4" />
-                Refresh Data
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsAuthenticated(false)}
-                className="border-border text-foreground hover:bg-muted"
-              >
-                <Lock className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </div>
-          </div>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Public Records Statistics</h1>
+          <p className="text-muted-foreground">Comprehensive analytics and insights into public records compensation data</p>
         </div>
 
         {/* Filters */}
@@ -300,7 +186,7 @@ const Statistics = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Personnel</p>
+                    <p className="text-sm text-muted-foreground">Total Records</p>
                     <p className="text-2xl font-bold text-foreground">{aggregates.totalPersonnel}</p>
                   </div>
                   <Users className="h-8 w-8 text-inadvertent-yellow" />
@@ -412,7 +298,7 @@ const Statistics = () => {
                       <div key={division} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                         <div>
                           <p className="font-semibold text-foreground">{division}</p>
-                          <p className="text-sm text-muted-foreground">{stats.count} personnel</p>
+                          <p className="text-sm text-muted-foreground">{stats.count} records</p>
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-inadvertent-yellow">

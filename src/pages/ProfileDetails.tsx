@@ -27,7 +27,7 @@ const ProfileDetails = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
-          <p className="text-muted-foreground mb-6">You need to be authenticated to view personnel records.</p>
+          <p className="text-muted-foreground mb-6">You need to be authenticated to view public records.</p>
           <Link to="/">
             <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
               <ArrowLeft size={16} /> Return to Roster

@@ -43,7 +43,7 @@ const Home = () => {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-muted-foreground">
-                Search personnel records by name, badge number, division, classification, and more with powerful filtering options.
+                Search public records by name, badge number, division, classification, and more with powerful filtering options.
               </CardDescription>
             </CardContent>
           </Card>
@@ -57,7 +57,7 @@ const Home = () => {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-muted-foreground">
-                View comprehensive statistics including compensation data, division breakdowns, and personnel analytics.
+                View comprehensive statistics including compensation data, division breakdowns, and public records analytics.
               </CardDescription>
             </CardContent>
           </Card>
@@ -71,7 +71,7 @@ const Home = () => {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-muted-foreground">
-                Password-protected access ensures that sensitive personnel information remains secure and accessible only to authorized users.
+                Password-protected access ensures that sensitive public records information remains secure and accessible only to authorized users.
               </CardDescription>
             </CardContent>
           </Card>
@@ -85,7 +85,7 @@ const Home = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div>
               <div className="text-3xl font-bold text-inadvertent-yellow mb-2">1000+</div>
-              <div className="text-muted-foreground">Personnel Records</div>
+              <div className="text-muted-foreground">Public Records</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-inadvertent-yellow mb-2">25+</div>

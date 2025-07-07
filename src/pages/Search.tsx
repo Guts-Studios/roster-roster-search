@@ -1,21 +1,14 @@
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Search as SearchIcon, X } from "lucide-react";
 import RosterList from "../components/RosterList";
-import PersonnelFiltersComponent from "../components/PersonnelFilters";
 import Pagination from "../components/Pagination";
-import { useAdvancedPersonnel, usePersonnelFilterOptions, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
-import { verifyPassword } from "../utils/auth";
+import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
 
 const Search = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const [filters, setFilters] = useState<PersonnelFilters>({
     firstName: '',
     lastName: '',
@@ -26,36 +19,37 @@ const Search = () => {
     pageSize: 25,
   });
 
-  const { data: personnelResponse, isLoading, error } = useAdvancedPersonnel(
-    isAuthenticated ? filters : { ...filters, firstName: '', lastName: '', badgeNumber: '' }
-  );
-  const { data: filterOptions } = usePersonnelFilterOptions();
+  // Always fetch data (prepopulate results)
+  const { data: personnelResponse, isLoading, error } = useAdvancedPersonnel(filters);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsVerifying(true);
-    setAuthError("");
-
-    try {
-      const isValid = await verifyPassword(password);
-      if (isValid) {
-        setIsAuthenticated(true);
-        setAuthError("");
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // Check if it's a number (badge number) or text (name)
+      const isNumber = /^\d+$/.test(searchQuery.trim());
+      
+      if (isNumber) {
+        setFilters(prev => ({
+          ...prev,
+          firstName: '',
+          lastName: '',
+          badgeNumber: searchQuery.trim(),
+          page: 1
+        }));
       } else {
-        setAuthError("Invalid password. Please try again.");
+        // For names, search in both first and last name
+        setFilters(prev => ({
+          ...prev,
+          firstName: searchQuery.trim(),
+          lastName: searchQuery.trim(),
+          badgeNumber: '',
+          page: 1
+        }));
       }
-    } catch (error) {
-      setAuthError("Authentication error. Please try again.");
-    } finally {
-      setIsVerifying(false);
     }
   };
 
-  const handleFiltersChange = (newFilters: Partial<PersonnelFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  };
-
-  const handleClearFilters = () => {
+  const handleClearSearch = () => {
+    setSearchQuery('');
     setFilters({
       firstName: '',
       lastName: '',
@@ -71,77 +65,23 @@ const Search = () => {
     setFilters(prev => ({ ...prev, page }));
   };
 
-  // Password protection screen
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md bg-card border-border">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-foreground">
-              <Lock className="h-6 w-6 text-inadvertent-yellow" />
-              Secure Access Required
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Enter the password to access the personnel database
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10 bg-input border-border text-foreground"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              {authError && (
-                <p className="text-sm text-destructive">{authError}</p>
-              )}
-              <Button
-                type="submit"
-                disabled={isVerifying}
-                className="w-full bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover disabled:opacity-50"
-              >
-                {isVerifying ? "Verifying..." : "Access Database"}
-              </Button>
-            </form>
-            <div className="mt-4 p-3 bg-muted rounded-md">
-              <p className="text-xs text-muted-foreground">
-                Password is securely hashed and verified.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   // Handle API errors
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-destructive mb-4">Error Loading Data</h1>
           <p className="text-muted-foreground mb-6">
-            You need to be authenticated to view personnel records.
+            There was an error loading the public records.
           </p>
           <p className="text-sm text-muted-foreground">
-            Please contact your administrator to set up authentication.
+            Please try refreshing the page or contact support if the issue persists.
           </p>
         </div>
       </div>
@@ -152,52 +92,60 @@ const Search = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-4 sm:py-6">
-        <div className="mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Personnel Search</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Search and filter personnel records with advanced sorting and pagination options
-              </p>
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">No Secret Police</h1>
+          <p className="text-lg text-muted-foreground">A project by Inadvertent</p>
+        </div>
+
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Input
+                type="text"
+                placeholder="Last name or first name or badge number"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pr-10 text-lg py-3"
+              />
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={handleClearSearch}
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              )}
             </div>
             <Button
-              variant="outline"
-              onClick={() => setIsAuthenticated(false)}
-              className="border-border text-foreground hover:bg-muted flex-shrink-0 self-start sm:self-center"
-              size="sm"
+              onClick={handleSearch}
+              disabled={!searchQuery.trim()}
+              className="bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover px-6 py-3"
             >
-              <Lock className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
-              <span className="sm:hidden">Exit</span>
+              <SearchIcon className="h-5 w-5" />
             </Button>
           </div>
         </div>
 
-        <PersonnelFiltersComponent
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onClearFilters={handleClearFilters}
-          divisions={filterOptions?.divisions || []}
-        />
-
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
             <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              Personnel Records
-              {(filters.firstName || filters.lastName || filters.badgeNumber) &&
-                ` - Filtered Results`}
+              Search Results
             </h2>
             <div className="text-xs sm:text-sm text-muted-foreground">
-              {isLoading ? "Loading..." : `${personnelResponse?.totalCount || 0} total records`}
+              {isLoading ? "Searching..." : `${personnelResponse?.totalCount || 0} records found`}
             </div>
           </div>
           
-          <RosterList 
-            personnel={personnelResponse?.data || []} 
-            isLoading={isLoading} 
+          <RosterList
+            personnel={personnelResponse?.data || []}
+            isLoading={isLoading}
           />
           
-          {personnelResponse && (
+          {personnelResponse && personnelResponse.totalCount > 0 && (
             <Pagination
               currentPage={personnelResponse.currentPage}
               totalPages={personnelResponse.totalPages}

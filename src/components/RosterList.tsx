@@ -13,7 +13,7 @@ const RosterList: React.FC<RosterListProps> = ({ personnel, isLoading }) => {
     return (
       <div className="flex flex-col items-center justify-center py-10">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-inadvertent-yellow"></div>
-        <p className="text-muted-foreground mt-4">Loading personnel records...</p>
+        <p className="text-muted-foreground mt-4">Loading public records...</p>
       </div>
     );
   }

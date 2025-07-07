@@ -45,7 +45,7 @@ const Index = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
           <p className="text-muted-foreground mb-6">
-            You need to be authenticated to view personnel records.
+            You need to be authenticated to view public records.
           </p>
           <p className="text-sm text-muted-foreground">
             Please contact your administrator to set up authentication.
@@ -61,7 +61,7 @@ const Index = () => {
         <div className="mb-4 sm:mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">No Secret Police</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Search and filter personnel records with advanced sorting and pagination options
+            Search and filter public records with advanced sorting and pagination options
           </p>
         </div>
 
@@ -75,7 +75,7 @@ const Index = () => {
         <div className="mt-4 sm:mt-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
             <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              Personnel Records
+              Public Records
               {(filters.firstName || filters.lastName || filters.badgeNumber) &&
                 ` - Filtered Results`}
             </h2>

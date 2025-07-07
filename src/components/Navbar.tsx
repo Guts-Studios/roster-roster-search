@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Home, Info, BarChart3, Search, Menu, X } from "lucide-react";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -18,23 +19,29 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { to: "/", icon: Home, label: "Home" },
-    { to: "/search", icon: Search, label: "Search" },
+    { to: "/", icon: Search, label: "Public Records" },
     { to: "/statistics", icon: BarChart3, label: "Statistics" },
     { to: "/about", icon: Info, label: "About" },
   ];
+
+  // Show "No Secret Police" in center for Statistics and About pages
+  const showCenterTitle = location.pathname === "/statistics" || location.pathname === "/about";
 
   return (
     <header className="sticky top-0 z-10 w-full bg-inadvertent-dark-cream shadow-md border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground">
-              No Secret Police
-            </h1>
-          </div>
+          {/* Empty left side for spacing */}
+          <div className="hidden md:block"></div>
 
-          {/* Desktop Navigation */}
+          {/* Center title for Statistics and About pages */}
+          {showCenterTitle && (
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <h1 className="text-xl font-bold text-foreground">No Secret Police</h1>
+            </div>
+          )}
+
+          {/* Desktop Navigation - moved to right */}
           <div className="hidden md:block">
             <NavigationMenu>
               <NavigationMenuList className="gap-2">
@@ -57,7 +64,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="md:hidden ml-auto">
             <Button
               variant="ghost"
               size="sm"
