@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   return (
-    <header className="sticky top-0 z-10 w-full bg-police-blue shadow-md">
+    <header className="sticky top-0 z-10 w-full bg-inadvertent-dark-cream shadow-md border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-white mr-8">
+            <h1 className="text-xl font-bold text-foreground mr-8">
               Personnel Database
             </h1>
             <NavigationMenu>
@@ -20,7 +20,7 @@ const Navbar = () => {
                   <Link to="/">
                     <NavigationMenuLink
                       className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-white hover:bg-police-blue-light rounded-md transition-colors",
+                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
                       )}
                     >
                       <Home size={16} />
@@ -32,7 +32,7 @@ const Navbar = () => {
                   <Link to="/search">
                     <NavigationMenuLink
                       className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-white hover:bg-police-blue-light rounded-md transition-colors",
+                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
                       )}
                     >
                       <Search size={16} />
@@ -44,7 +44,7 @@ const Navbar = () => {
                   <Link to="/statistics">
                     <NavigationMenuLink
                       className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-white hover:bg-police-blue-light rounded-md transition-colors",
+                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
                       )}
                     >
                       <BarChart3 size={16} />
@@ -56,7 +56,7 @@ const Navbar = () => {
                   <Link to="/about">
                     <NavigationMenuLink
                       className={cn(
-                        "flex items-center gap-1 px-4 py-2 text-sm text-white hover:bg-police-blue-light rounded-md transition-colors",
+                        "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
                       )}
                     >
                       <Info size={16} />

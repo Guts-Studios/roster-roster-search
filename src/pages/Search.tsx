@@ -74,7 +74,7 @@ const Search = () => {
         <Card className="w-full max-w-md bg-card border-border">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-foreground">
-              <Lock className="h-6 w-6 text-watchers-orange" />
+              <Lock className="h-6 w-6 text-inadvertent-yellow" />
               Secure Access Required
             </CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -111,7 +111,7 @@ const Search = () => {
               <Button
                 type="submit"
                 disabled={isVerifying}
-                className="w-full bg-watchers-orange hover:bg-watchers-orange-hover disabled:opacity-50"
+                className="w-full bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover disabled:opacity-50"
               >
                 {isVerifying ? "Verifying..." : "Access Database"}
               </Button>

@@ -1,97 +1,97 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Watch the Watchers color scheme - Light mode fallback */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    /* Inadvertent Substack color scheme - Light cream/beige theme */
+    --background: 45 25% 95%;
+    --foreground: 20 14% 20%;
 
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 100%;
+    --card: 45 25% 98%;
+    --card-foreground: 20 14% 20%;
 
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 45 25% 98%;
+    --popover-foreground: 20 14% 20%;
 
-    --primary: 16 100% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 45 90% 55%;
+    --primary-foreground: 20 14% 20%;
 
-    --secondary: 220 13% 28%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 45 15% 85%;
+    --secondary-foreground: 20 14% 20%;
 
-    --muted: 220 13% 18%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 45 15% 90%;
+    --muted-foreground: 20 14% 45%;
 
-    --accent: 16 100% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 90% 55%;
+    --accent-foreground: 20 14% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 18%;
-    --input: 220 13% 28%;
-    --ring: 16 100% 55%;
+    --border: 45 15% 85%;
+    --input: 45 25% 98%;
+    --ring: 45 90% 55%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 13% 18%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 13% 18%;
-    --sidebar-ring: 16 100% 55%;
+    --sidebar-background: 45 25% 95%;
+    --sidebar-foreground: 20 14% 20%;
+    --sidebar-primary: 45 90% 55%;
+    --sidebar-primary-foreground: 20 14% 20%;
+    --sidebar-accent: 45 15% 90%;
+    --sidebar-accent-foreground: 20 14% 20%;
+    --sidebar-border: 45 15% 85%;
+    --sidebar-ring: 45 90% 55%;
     
-    /* Watch the Watchers theme specific colors */
-    --watchers-orange: 16 100% 55%;
-    --watchers-orange-hover: 16 100% 50%;
-    --watchers-black: 0 0% 0%;
-    --watchers-dark-gray: 220 13% 28%;
-    --watchers-light-gray: 220 13% 40%;
-    --watchers-white: 0 0% 100%;
+    /* Inadvertent theme specific colors */
+    --inadvertent-yellow: 45 90% 55%;
+    --inadvertent-yellow-hover: 45 90% 50%;
+    --inadvertent-cream: 45 25% 95%;
+    --inadvertent-dark-cream: 45 15% 85%;
+    --inadvertent-light-cream: 45 25% 98%;
+    --inadvertent-dark-text: 20 14% 20%;
+    --inadvertent-muted-text: 20 14% 45%;
   }
 
   .dark {
-    /* Watch the Watchers color scheme - Dark mode (same as light since it's already dark) */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    /* Keep same colors for dark mode to maintain consistency */
+    --background: 45 25% 95%;
+    --foreground: 20 14% 20%;
 
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 100%;
+    --card: 45 25% 98%;
+    --card-foreground: 20 14% 20%;
 
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 45 25% 98%;
+    --popover-foreground: 20 14% 20%;
 
-    --primary: 16 100% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 45 90% 55%;
+    --primary-foreground: 20 14% 20%;
 
-    --secondary: 220 13% 28%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 45 15% 85%;
+    --secondary-foreground: 20 14% 20%;
 
-    --muted: 220 13% 18%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 45 15% 90%;
+    --muted-foreground: 20 14% 45%;
 
-    --accent: 16 100% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 90% 55%;
+    --accent-foreground: 20 14% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 18%;
-    --input: 220 13% 28%;
-    --ring: 16 100% 55%;
+    --border: 45 15% 85%;
+    --input: 45 25% 98%;
+    --ring: 45 90% 55%;
 
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 13% 18%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 13% 18%;
-    --sidebar-ring: 16 100% 55%;
+    --sidebar-background: 45 25% 95%;
+    --sidebar-foreground: 20 14% 20%;
+    --sidebar-primary: 45 90% 55%;
+    --sidebar-primary-foreground: 20 14% 20%;
+    --sidebar-accent: 45 15% 90%;
+    --sidebar-accent-foreground: 20 14% 20%;
+    --sidebar-border: 45 15% 85%;
+    --sidebar-ring: 45 90% 55%;
   }
 }
 

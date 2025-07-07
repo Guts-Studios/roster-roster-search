@@ -25,20 +25,20 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
 
   return (
     <Link to={`/profile/${person.id}`}>
-      <Card className="w-full hover:shadow-md transition-shadow border-police-gray/20 cursor-pointer">
-        <CardHeader className="flex flex-row items-center gap-4 pb-2 bg-gradient-to-r from-police-blue/5 to-police-blue/0">
-          <Avatar className="h-12 w-12 bg-police-blue text-white border-2 border-police-gold">
+      <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
+        <CardHeader className="flex flex-row items-center gap-4 pb-2 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
+          <Avatar className="h-12 w-12 bg-inadvertent-yellow text-inadvertent-dark-text border-2 border-inadvertent-yellow">
             {photoUrl && <AvatarImage src={photoUrl} alt={fullName} />}
-            <AvatarFallback className="bg-police-blue text-white">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-inadvertent-yellow text-inadvertent-dark-text">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold text-police-navy">{fullName}</h3>
+            <h3 className="text-lg font-semibold text-foreground">{fullName}</h3>
             <div className="flex items-center gap-2">
-              {person.badge_number && <Badge variant="outline" className="text-xs border-police-gold text-police-navy bg-police-badge/10">
+              {person.badge_number && <Badge variant="outline" className="text-xs border-inadvertent-yellow text-foreground bg-inadvertent-yellow/10">
                 {person.badge_number}
               </Badge>}
               {person.classification && <span className="text-sm text-muted-foreground flex items-center gap-1">
-                <Shield size={12} className="text-police-blue" />
+                <Shield size={12} className="text-inadvertent-yellow" />
                 {person.classification}
               </span>}
             </div>
@@ -54,7 +54,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
             {formattedCompensation && (
               <div className="col-span-2 flex items-center gap-1">
                 <span className="font-medium">Total Compensation:</span>{" "}
-                <span className="flex items-center text-police-blue">
+                <span className="flex items-center text-inadvertent-yellow">
                   <DollarSign size={14} className="inline mr-0.5" />
                   {formattedCompensation}
                 </span>

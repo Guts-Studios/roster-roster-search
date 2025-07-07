@@ -16,20 +16,20 @@ const ProfileDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-police-blue"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-inadvertent-yellow"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-6">You need to be authenticated to view personnel records.</p>
+          <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
+          <p className="text-muted-foreground mb-6">You need to be authenticated to view personnel records.</p>
           <Link to="/">
-            <Button className="bg-police-blue text-white">
+            <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
               <ArrowLeft size={16} /> Return to Roster
             </Button>
           </Link>
@@ -40,12 +40,12 @@ const ProfileDetails = () => {
 
   if (!person) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-police-navy mb-4">Profile Not Found</h1>
-          <p className="text-gray-600 mb-6">The requested profile could not be found.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Profile Not Found</h1>
+          <p className="text-muted-foreground mb-6">The requested profile could not be found.</p>
           <Link to="/">
-            <Button className="bg-police-blue text-white">
+            <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
               <ArrowLeft size={16} /> Return to Roster
             </Button>
           </Link>
@@ -65,31 +65,31 @@ const ProfileDetails = () => {
     : "Not available";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/" className="inline-flex items-center text-police-blue hover:text-police-navy mb-6">
-          <Button variant="outline" className="border-police-blue text-police-blue hover:bg-police-blue/10">
+        <Link to="/" className="inline-flex items-center text-inadvertent-yellow hover:text-foreground mb-6">
+          <Button variant="outline" className="border-inadvertent-yellow text-inadvertent-yellow hover:bg-inadvertent-yellow/10">
             <ArrowLeft size={16} className="mr-2" /> Back to Roster
           </Button>
         </Link>
         
-        <Card className="w-full max-w-4xl mx-auto border-police-blue/20">
-          <CardHeader className="bg-gradient-to-r from-police-blue/10 to-police-blue/5 pb-6">
+        <Card className="w-full max-w-4xl mx-auto border-border bg-card">
+          <CardHeader className="bg-gradient-to-r from-inadvertent-yellow/10 to-inadvertent-yellow/5 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-               <Avatar className="h-24 w-24 border-4 border-police-gold bg-police-blue text-white">
+               <Avatar className="h-24 w-24 border-4 border-inadvertent-yellow bg-inadvertent-yellow text-inadvertent-dark-text">
                 {photoUrl && <AvatarImage src={photoUrl} alt={fullName} />}
-                <AvatarFallback className="text-2xl bg-police-blue">{initials}</AvatarFallback>
+                <AvatarFallback className="text-2xl bg-inadvertent-yellow text-inadvertent-dark-text">{initials}</AvatarFallback>
               </Avatar>
               
               <div className="flex flex-col items-center sm:items-start">
-                <h1 className="text-3xl font-bold text-police-navy text-center sm:text-left">{fullName}</h1>
+                <h1 className="text-3xl font-bold text-foreground text-center sm:text-left">{fullName}</h1>
                 <div className="flex flex-wrap items-center gap-3 mt-2 justify-center sm:justify-start">
-                  {person.badge_number && <Badge variant="outline" className="text-sm border-police-gold bg-police-badge/10 px-3 py-1">
+                  {person.badge_number && <Badge variant="outline" className="text-sm border-inadvertent-yellow bg-inadvertent-yellow/10 px-3 py-1">
                     {person.badge_number}
                   </Badge>}
                   {person.classification && (
-                    <span className="text-sm flex items-center gap-1 bg-police-blue/10 px-3 py-1 rounded-full">
-                      <Shield size={14} className="text-police-blue" />
+                    <span className="text-sm flex items-center gap-1 bg-inadvertent-yellow/10 px-3 py-1 rounded-full">
+                      <Shield size={14} className="text-inadvertent-yellow" />
                       {person.classification}
                     </span>
                   )}
@@ -101,60 +101,60 @@ const ProfileDetails = () => {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
               {person.division && (
-                <div className="border-l-2 border-police-blue pl-4">
-                  <h2 className="text-sm text-gray-500 uppercase">Division</h2>
-                  <p className="text-lg font-medium text-police-navy">{person.division}</p>
+                <div className="border-l-2 border-inadvertent-yellow pl-4">
+                  <h2 className="text-sm text-muted-foreground uppercase">Division</h2>
+                  <p className="text-lg font-medium text-foreground">{person.division}</p>
                 </div>
               )}
               
-              <div className="border-l-2 border-police-blue pl-4">
-                <h2 className="text-sm text-gray-500 uppercase">Total Compensation</h2>
-                <p className="text-lg font-medium text-police-blue flex items-center gap-1">
+              <div className="border-l-2 border-inadvertent-yellow pl-4">
+                <h2 className="text-sm text-muted-foreground uppercase">Total Compensation</h2>
+                <p className="text-lg font-medium text-inadvertent-yellow flex items-center gap-1">
                   <DollarSign size={16} className="inline" />
                   {formattedCompensation}
                 </p>
               </div>
               
               {person.regular_pay && (
-                <div className="border-l-2 border-police-blue pl-4">
-                  <h2 className="text-sm text-gray-500 uppercase">Regular Pay</h2>
-                  <p className="text-lg font-medium text-police-navy">
+                <div className="border-l-2 border-inadvertent-yellow pl-4">
+                  <h2 className="text-sm text-muted-foreground uppercase">Regular Pay</h2>
+                  <p className="text-lg font-medium text-foreground">
                     ${person.regular_pay.toLocaleString()}
                   </p>
                 </div>
               )}
 
               {person.overtime && person.overtime > 0 && (
-                <div className="border-l-2 border-police-blue pl-4">
-                  <h2 className="text-sm text-gray-500 uppercase">Overtime</h2>
-                  <p className="text-lg font-medium text-police-navy">
+                <div className="border-l-2 border-inadvertent-yellow pl-4">
+                  <h2 className="text-sm text-muted-foreground uppercase">Overtime</h2>
+                  <p className="text-lg font-medium text-foreground">
                     ${person.overtime.toLocaleString()}
                   </p>
                 </div>
               )}
 
               {person.premiums && person.premiums > 0 && (
-                <div className="border-l-2 border-police-blue pl-4">
-                  <h2 className="text-sm text-gray-500 uppercase">Premiums</h2>
-                  <p className="text-lg font-medium text-police-navy">
+                <div className="border-l-2 border-inadvertent-yellow pl-4">
+                  <h2 className="text-sm text-muted-foreground uppercase">Premiums</h2>
+                  <p className="text-lg font-medium text-foreground">
                     ${person.premiums.toLocaleString()}
                   </p>
                 </div>
               )}
 
               {person.payout && person.payout > 0 && (
-                <div className="border-l-2 border-police-blue pl-4">
-                  <h2 className="text-sm text-gray-500 uppercase">Payout</h2>
-                  <p className="text-lg font-medium text-police-navy">
+                <div className="border-l-2 border-inadvertent-yellow pl-4">
+                  <h2 className="text-sm text-muted-foreground uppercase">Payout</h2>
+                  <p className="text-lg font-medium text-foreground">
                     ${person.payout.toLocaleString()}
                   </p>
                 </div>
               )}
 
               {person.health_dental_vision && person.health_dental_vision > 0 && (
-                <div className="border-l-2 border-police-blue pl-4">
-                  <h2 className="text-sm text-gray-500 uppercase">Health/Dental/Vision</h2>
-                  <p className="text-lg font-medium text-police-navy">
+                <div className="border-l-2 border-inadvertent-yellow pl-4">
+                  <h2 className="text-sm text-muted-foreground uppercase">Health/Dental/Vision</h2>
+                  <p className="text-lg font-medium text-foreground">
                     ${person.health_dental_vision.toLocaleString()}
                   </p>
                 </div>

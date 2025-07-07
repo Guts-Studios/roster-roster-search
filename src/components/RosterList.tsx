@@ -12,8 +12,8 @@ const RosterList: React.FC<RosterListProps> = ({ personnel, isLoading }) => {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-police-blue"></div>
-        <p className="text-gray-500 mt-4">Loading personnel records...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-inadvertent-yellow"></div>
+        <p className="text-muted-foreground mt-4">Loading personnel records...</p>
       </div>
     );
   }
@@ -21,8 +21,8 @@ const RosterList: React.FC<RosterListProps> = ({ personnel, isLoading }) => {
   if (personnel.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
-        <p className="text-xl text-gray-500">No matching records found</p>
-        <p className="text-sm text-gray-400 mt-2">Try a different search term</p>
+        <p className="text-xl text-muted-foreground">No matching records found</p>
+        <p className="text-sm text-muted-foreground mt-2">Try a different search term</p>
       </div>
     );
   }

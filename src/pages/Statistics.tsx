@@ -130,7 +130,7 @@ const Statistics = () => {
         <Card className="w-full max-w-md bg-card border-border">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-foreground">
-              <Lock className="h-6 w-6 text-watchers-orange" />
+              <Lock className="h-6 w-6 text-inadvertent-yellow" />
               Secure Access Required
             </CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -167,7 +167,7 @@ const Statistics = () => {
               <Button 
                 type="submit" 
                 disabled={isVerifying}
-                className="w-full bg-watchers-orange hover:bg-watchers-orange-hover disabled:opacity-50"
+                className="w-full bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover disabled:opacity-50"
               >
                 {isVerifying ? "Verifying..." : "Access Statistics"}
               </Button>
@@ -303,7 +303,7 @@ const Statistics = () => {
                     <p className="text-sm text-muted-foreground">Total Personnel</p>
                     <p className="text-2xl font-bold text-foreground">{aggregates.totalPersonnel}</p>
                   </div>
-                  <Users className="h-8 w-8 text-watchers-orange" />
+                  <Users className="h-8 w-8 text-inadvertent-yellow" />
                 </div>
               </CardContent>
             </Card>
@@ -317,7 +317,7 @@ const Statistics = () => {
                       ${aggregates.totalCompensation.toLocaleString()}
                     </p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-watchers-orange" />
+                  <DollarSign className="h-8 w-8 text-inadvertent-yellow" />
                 </div>
               </CardContent>
             </Card>
@@ -331,7 +331,7 @@ const Statistics = () => {
                       ${Math.round(aggregates.avgCompensation).toLocaleString()}
                     </p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-watchers-orange" />
+                  <TrendingUp className="h-8 w-8 text-inadvertent-yellow" />
                 </div>
               </CardContent>
             </Card>
@@ -345,7 +345,7 @@ const Statistics = () => {
                       ${aggregates.totalOvertime.toLocaleString()}
                     </p>
                   </div>
-                  <BarChart3 className="h-8 w-8 text-watchers-orange" />
+                  <BarChart3 className="h-8 w-8 text-inadvertent-yellow" />
                 </div>
               </CardContent>
             </Card>
@@ -363,7 +363,7 @@ const Statistics = () => {
             <CardContent>
               {loadingTop ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-watchers-orange"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-inadvertent-yellow"></div>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -382,7 +382,7 @@ const Statistics = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-watchers-orange">
+                        <p className="font-bold text-inadvertent-yellow">
                           ${getTotalCompensation(person).toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">Total Compensation</p>
@@ -402,7 +402,7 @@ const Statistics = () => {
             <CardContent>
               {loadingAggs ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-watchers-orange"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-inadvertent-yellow"></div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -415,7 +415,7 @@ const Statistics = () => {
                           <p className="text-sm text-muted-foreground">{stats.count} personnel</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-watchers-orange">
+                          <p className="font-bold text-inadvertent-yellow">
                             ${stats.totalCompensation.toLocaleString()}
                           </p>
                           <p className="text-xs text-muted-foreground">
