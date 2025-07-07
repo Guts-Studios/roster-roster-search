@@ -1,0 +1,116 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Red circle background -->
+  <circle cx="250" cy="250" r="250" fill="#FF0000"/>
+  
+  <!-- STOP LAPD text -->
+  <text x="250" y="120" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="48" font-weight="900">STOP LAPD</text>
+  
+  <!-- SPYING! text -->
+  <text x="250" y="180" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="48" font-weight="900">SPYING!</text>
+  
+  <!-- Wave lines on left -->
+  <g stroke="white" stroke-width="4" fill="none">
+    <path d="M80 220 Q90 210 100 220 T120 220"/>
+    <path d="M80 235 Q90 225 100 235 T120 235"/>
+    <path d="M80 250 Q90 240 100 250 T120 250"/>
+    <path d="M80 265 Q90 255 100 265 T120 265"/>
+  </g>
+  
+  <!-- Wave lines on right -->
+  <g stroke="white" stroke-width="4" fill="none">
+    <path d="M380 220 Q390 210 400 220 T420 220"/>
+    <path d="M380 235 Q390 225 400 235 T420 235"/>
+    <path d="M380 250 Q390 240 400 250 T420 250"/>
+    <path d="M380 265 Q390 255 400 265 T420 265"/>
+  </g>
+  
+  <!-- Radio waves from antenna -->
+  <g stroke="white" stroke-width="3" fill="none" stroke-linecap="round">
+    <circle cx="250" cy="200" r="15"/>
+    <circle cx="250" cy="200" r="25"/>
+    <circle cx="250" cy="200" r="35"/>
+    <circle cx="250" cy="200" r="45"/>
+    <circle cx="250" cy="200" r="55"/>
+  </g>
+  
+  <!-- Antenna -->
+  <line x1="250" y1="200" x2="250" y2="160" stroke="white" stroke-width="4"/>
+  <circle cx="250" cy="160" r="6" fill="white"/>
+  
+  <!-- Left ear -->
+  <ellipse cx="180" cy="280" rx="25" ry="40" fill="white"/>
+  <ellipse cx="180" cy="280" rx="15" ry="30" fill="none" stroke="black" stroke-width="2"/>
+  
+  <!-- Right ear -->
+  <ellipse cx="320" cy="280" rx="25" ry="40" fill="white"/>
+  <ellipse cx="320" cy="280" rx="15" ry="30" fill="none" stroke="black" stroke-width="2"/>
+  
+  <!-- Police badge (simplified) -->
+  <g transform="translate(250,300)">
+    <!-- Badge outline -->
+    <path d="M0,-40 L20,-20 L15,0 L25,20 L0,35 L-25,20 L-15,0 L-20,-20 Z" fill="white" stroke="black" stroke-width="2"/>
+    
+    <!-- Badge text -->
+    <text x="0" y="-25" text-anchor="middle" fill="black" font-family="serif" font-size="8" font-weight="bold">POLICEMAN</text>
+    <text x="0" y="-15" text-anchor="middle" fill="black" font-family="serif" font-size="6">LOS ANGELES</text>
+    <text x="0" y="10" text-anchor="middle" fill="black" font-family="serif" font-size="8" font-weight="bold">POLICE</text>
+    <text x="0" y="25" text-anchor="middle" fill="black" font-family="serif" font-size="10" font-weight="bold">SPY</text>
+  </g>
+  
+  <!-- City skyline silhouette at bottom -->
+  <g fill="black">
+    <rect x="0" y="420" width="30" height="80"/>
+    <rect x="35" y="400" width="25" height="100"/>
+    <rect x="65" y="430" width="20" height="70"/>
+    <rect x="90" y="410" width="30" height="90"/>
+    <rect x="125" y="440" width="15" height="60"/>
+    <rect x="145" y="420" width="25" height="80"/>
+    <rect x="175" y="435" width="20" height="65"/>
+    <rect x="200" y="415" width="30" height="85"/>
+    <rect x="235" y="445" width="15" height="55"/>
+    <rect x="255" y="425" width="25" height="75"/>
+    <rect x="285" y="440" width="20" height="60"/>
+    <rect x="310" y="420" width="30" height="80"/>
+    <rect x="345" y="450" width="15" height="50"/>
+    <rect x="365" y="430" width="25" height="70"/>
+    <rect x="395" y="410" width="20" height="90"/>
+    <rect x="420" y="440" width="30" height="60"/>
+    <rect x="455" y="420" width="25" height="80"/>
+    <rect x="485" y="435" width="15" height="65"/>
+  </g>
+  
+  <!-- Small windows in buildings -->
+  <g fill="#FF0000">
+    <rect x="5" y="430" width="4" height="4"/>
+    <rect x="15" y="440" width="4" height="4"/>
+    <rect x="20" y="450" width="4" height="4"/>
+    <rect x="40" y="410" width="4" height="4"/>
+    <rect x="50" y="420" width="4" height="4"/>
+    <rect x="70" y="440" width="3" height="3"/>
+    <rect x="95" y="420" width="4" height="4"/>
+    <rect x="105" y="430" width="4" height="4"/>
+    <rect x="115" y="440" width="4" height="4"/>
+    <rect x="150" y="430" width="4" height="4"/>
+    <rect x="160" y="440" width="4" height="4"/>
+    <rect x="180" y="445" width="3" height="3"/>
+    <rect x="205" y="425" width="4" height="4"/>
+    <rect x="215" y="435" width="4" height="4"/>
+    <rect x="225" y="445" width="4" height="4"/>
+    <rect x="260" y="435" width="4" height="4"/>
+    <rect x="270" y="445" width="4" height="4"/>
+    <rect x="290" y="450" width="3" height="3"/>
+    <rect x="315" y="430" width="4" height="4"/>
+    <rect x="325" y="440" width="4" height="4"/>
+    <rect x="335" y="450" width="4" height="4"/>
+    <rect x="370" y="440" width="4" height="4"/>
+    <rect x="380" y="450" width="4" height="4"/>
+    <rect x="400" y="420" width="3" height="3"/>
+    <rect x="410" y="430" width="3" height="3"/>
+    <rect x="425" y="450" width="4" height="4"/>
+    <rect x="435" y="460" width="4" height="4"/>
+    <rect x="445" y="470" width="4" height="4"/>
+    <rect x="460" y="430" width="4" height="4"/>
+    <rect x="470" y="440" width="4" height="4"/>
+    <rect x="490" y="445" width="3" height="3"/>
+  </g>
+</svg>
