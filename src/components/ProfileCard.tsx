@@ -27,9 +27,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     <Link to={`/profile/${person.id}`}>
       <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
         <CardHeader className="flex flex-row items-center gap-4 pb-2 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
-          <Avatar className="h-12 w-12 bg-inadvertent-yellow text-inadvertent-dark-text border-2 border-inadvertent-yellow">
-            {photoUrl && <AvatarImage src={photoUrl} alt={fullName} />}
-            <AvatarFallback className="bg-inadvertent-yellow text-inadvertent-dark-text">{initials}</AvatarFallback>
+          <Avatar className="h-20 w-20 bg-inadvertent-yellow text-inadvertent-dark-text border-2 border-inadvertent-yellow flex-shrink-0">
+            {photoUrl && <AvatarImage src={photoUrl} alt={fullName} className="object-cover" />}
+            <AvatarFallback className="bg-inadvertent-yellow text-inadvertent-dark-text text-lg">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <h3 className="text-lg font-semibold text-foreground">{fullName}</h3>
