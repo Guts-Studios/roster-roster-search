@@ -27,10 +27,19 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     <Link to={`/profile/${person.id}`}>
       <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
         <CardHeader className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 pb-2 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
-          <Avatar className="h-16 w-16 sm:h-20 sm:w-20 bg-inadvertent-yellow text-inadvertent-dark-text border-2 border-inadvertent-yellow flex-shrink-0">
-            {photoUrl && <AvatarImage src={photoUrl} alt={fullName} className="object-cover" />}
-            <AvatarFallback className="bg-inadvertent-yellow text-inadvertent-dark-text text-base sm:text-lg">{initials}</AvatarFallback>
-          </Avatar>
+          <div className="relative h-20 w-16 sm:h-24 sm:w-20 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={fullName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-inadvertent-yellow flex items-center justify-center">
+                <span className="text-inadvertent-dark-text font-semibold text-sm sm:text-base">{initials}</span>
+              </div>
+            )}
+          </div>
           <div className="flex flex-col text-center sm:text-left min-w-0 flex-1">
             <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{fullName}</h3>
             <div className="flex flex-col sm:flex-row items-center gap-2 mt-1">
