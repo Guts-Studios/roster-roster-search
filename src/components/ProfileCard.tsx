@@ -44,7 +44,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
             <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{fullName}</h3>
             <div className="flex flex-col sm:flex-row items-center gap-2 mt-1">
               {person.badge_number && <Badge variant="outline" className="text-xs border-inadvertent-yellow text-foreground bg-inadvertent-yellow/10 whitespace-nowrap">
-                {person.badge_number}
+                Badge #{person.badge_number}
               </Badge>}
               {person.classification && <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 truncate">
                 <Shield size={12} className="text-inadvertent-yellow flex-shrink-0" />
