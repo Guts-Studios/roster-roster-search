@@ -29,7 +29,7 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
 
       // Apply search filter
       if (filters.searchTerm && filters.searchTerm.trim()) {
-        query = query.or(`last_name.ilike.%${filters.searchTerm}%,first_name.ilike.%${filters.searchTerm}%,badge_number.ilike.%${filters.searchTerm}%`);
+        query = query.or(`last_name.ilike.%${filters.searchTerm}%,first_name.ilike.%${filters.searchTerm}%,badge_number.ilike.%${filters.searchTerm}%,division.ilike.%${filters.searchTerm}%`);
       }
 
       // Apply division filter
@@ -48,7 +48,7 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         .select("*", { count: 'exact', head: true });
 
       if (filters.searchTerm && filters.searchTerm.trim()) {
-        countQuery = countQuery.or(`last_name.ilike.%${filters.searchTerm}%,first_name.ilike.%${filters.searchTerm}%,badge_number.ilike.%${filters.searchTerm}%`);
+        countQuery = countQuery.or(`last_name.ilike.%${filters.searchTerm}%,first_name.ilike.%${filters.searchTerm}%,badge_number.ilike.%${filters.searchTerm}%,division.ilike.%${filters.searchTerm}%`);
       }
       
       if (filters.division) {
@@ -83,7 +83,7 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
 
       if (error) throw error;
 
-      let personnel = data || [];
+      const personnel = data || [];
 
       // Client-side sorting for total compensation
       if (filters.sortBy === 'total_compensation') {
