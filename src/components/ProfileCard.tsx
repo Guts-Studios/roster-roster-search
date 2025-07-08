@@ -1,12 +1,12 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Personnel, getFullName, getTotalCompensation } from "../types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Shield } from "lucide-react";
-import { getPhotoUrl } from "@/utils/photoUtils";
+import { getPhotoUrlVariations } from "@/utils/photoUtils";
 
 interface ProfileCardProps {
   person: Personnel;
@@ -16,7 +16,42 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
   const fullName = getFullName(person);
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
-  const photoUrl = getPhotoUrl(person);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  
+  // Check for working photo URL by trying multiple variations
+  useEffect(() => {
+    const findWorkingPhotoUrl = async () => {
+      const potentialUrls = getPhotoUrlVariations(person);
+      if (potentialUrls.length === 0) {
+        setPhotoUrl(null);
+        return;
+      }
+      
+      // Try each URL variation until we find one that works
+      for (const url of potentialUrls) {
+        try {
+          const success = await new Promise<boolean>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+          });
+          
+          if (success) {
+            setPhotoUrl(url);
+            return;
+          }
+        } catch {
+          continue;
+        }
+      }
+      
+      // If no variation worked, set to null
+      setPhotoUrl(null);
+    };
+    
+    findWorkingPhotoUrl();
+  }, [person]);
   
   // Format compensation with commas and dollar sign
   const formattedCompensation = totalCompensation > 0 
