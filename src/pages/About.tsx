@@ -121,14 +121,24 @@ const About = () => {
         <div className="max-w-2xl mx-auto mb-8">
           <div className="flex gap-2">
             <div className="flex-1 relative">
-              <Input
-                type="text"
-                placeholder="Search personnel by name or badge number"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="pr-10 text-lg py-3"
-              />
+              <>
+                <Input
+                  type="text"
+                  placeholder="Name or Badge"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pr-10 text-lg py-3 sm:hidden"
+                />
+                <Input
+                  type="text"
+                  placeholder="Last or First Name or Badge"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pr-10 text-lg py-3 hidden sm:block"
+                />
+              </>
               {searchQuery && (
                 <Button
                   type="button"

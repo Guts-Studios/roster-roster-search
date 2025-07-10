@@ -62,7 +62,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     <Link to={`/profile/${person.id}`}>
       <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
         <CardHeader className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 pb-2 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
-          <div className="relative h-20 w-16 sm:h-24 sm:w-20 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">
+          <div className="relative h-[4.5rem] w-16 sm:h-[5.5rem] sm:w-20 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">
             {photoUrl ? (
               <img
                 src={photoUrl}
