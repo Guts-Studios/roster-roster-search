@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,26 +255,28 @@ const Statistics = () => {
               ) : (
                 <div className="space-y-4">
                   {topSalaries?.map((person, index) => (
-                    <div key={person.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center border-border">
-                          {index + 1}
-                        </Badge>
-                        <div>
-                          <p className="font-semibold text-foreground">{getFullName(person)}</p>
-                          <p className="text-sm text-muted-foreground">{person.classification} • {person.division}</p>
-                          {person.badge_number && (
-                            <p className="text-xs text-muted-foreground">Badge: {person.badge_number}</p>
-                          )}
+                    <Link key={person.id} to={`/profile/${person.id}`}>
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center border-border">
+                            {index + 1}
+                          </Badge>
+                          <div>
+                            <p className="font-semibold text-foreground">{getFullName(person)}</p>
+                            <p className="text-sm text-muted-foreground">{person.classification} • {person.division}</p>
+                            {person.badge_number && (
+                              <p className="text-xs text-muted-foreground">Badge: {person.badge_number}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-inadvertent-yellow">
+                            ${getTotalCompensation(person).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Total Compensation</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-inadvertent-yellow">
-                          ${getTotalCompensation(person).toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Total Compensation</p>
-                      </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
