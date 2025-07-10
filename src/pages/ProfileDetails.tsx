@@ -59,9 +59,9 @@ const ProfileDetails = () => {
   const totalCompensation = getTotalCompensation(person);
   const photoUrl = getPhotoUrl(person);
   
-  // Format compensation with commas (dollar sign icon is displayed separately)
+  // Format compensation with commas and dollar sign (consistent with other pay fields)
   const formattedCompensation = totalCompensation > 0
-    ? totalCompensation.toLocaleString()
+    ? `$${totalCompensation.toLocaleString()}`
     : "Not available";
 
   return (

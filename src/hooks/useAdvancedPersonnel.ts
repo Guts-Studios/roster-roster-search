@@ -21,8 +21,11 @@ export interface PersonnelResponse {
 }
 
 export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
+  const hasSearchCriteria = !!(filters.firstName || filters.lastName || filters.badgeNumber);
+  
   return useQuery({
     queryKey: ["personnel-advanced", filters],
+    enabled: hasSearchCriteria,
     queryFn: async (): Promise<PersonnelResponse> => {
       let query = supabase
         .from("personnel")

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search as SearchIcon, X } from "lucide-react";
@@ -19,8 +19,51 @@ const Search = () => {
     pageSize: 25,
   });
 
-  // Always fetch data (prepopulate results)
+  // Only fetch data when there are search criteria
+  const hasSearchCriteria = filters.firstName || filters.lastName || filters.badgeNumber;
   const { data: personnelResponse, isLoading, error } = useAdvancedPersonnel(filters);
+
+  // Auto-search with debounce as user types
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        // Check if it's a number (badge number) or text (name)
+        const isNumber = /^\d+$/.test(searchQuery.trim());
+        
+        if (isNumber) {
+          setFilters(prev => ({
+            ...prev,
+            firstName: '',
+            lastName: '',
+            badgeNumber: searchQuery.trim(),
+            page: 1
+          }));
+        } else {
+          // For names, search in both first and last name
+          setFilters(prev => ({
+            ...prev,
+            firstName: searchQuery.trim(),
+            lastName: searchQuery.trim(),
+            badgeNumber: '',
+            page: 1
+          }));
+        }
+      } else {
+        // Clear results when search query is empty
+        setFilters({
+          firstName: '',
+          lastName: '',
+          badgeNumber: '',
+          sortBy: 'name',
+          sortOrder: 'asc',
+          page: 1,
+          pageSize: 25,
+        });
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -130,31 +173,41 @@ const Search = () => {
           </div>
         </div>
 
-        <div className="mt-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              Search Results
-            </h2>
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              {isLoading ? "Searching..." : `${personnelResponse?.totalCount || 0} records found`}
+        {hasSearchCriteria && (
+          <div className="mt-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+                Search Results
+              </h2>
+              <div className="text-xs sm:text-sm text-muted-foreground">
+                {isLoading ? "Searching..." : `${personnelResponse?.totalCount || 0} records found`}
+              </div>
             </div>
-          </div>
-          
-          <RosterList
-            personnel={personnelResponse?.data || []}
-            isLoading={isLoading}
-          />
-          
-          {personnelResponse && personnelResponse.totalCount > 0 && (
-            <Pagination
-              currentPage={personnelResponse.currentPage}
-              totalPages={personnelResponse.totalPages}
-              totalCount={personnelResponse.totalCount}
-              pageSize={filters.pageSize}
-              onPageChange={handlePageChange}
+            
+            <RosterList
+              personnel={personnelResponse?.data || []}
+              isLoading={isLoading}
             />
-          )}
-        </div>
+            
+            {personnelResponse && personnelResponse.totalCount > 0 && (
+              <Pagination
+                currentPage={personnelResponse.currentPage}
+                totalPages={personnelResponse.totalPages}
+                totalCount={personnelResponse.totalCount}
+                pageSize={filters.pageSize}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </div>
+        )}
+
+        {!hasSearchCriteria && (
+          <div className="mt-8 text-center">
+            <p className="text-lg text-muted-foreground">
+              Start typing a name or badge number to search personnel records
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

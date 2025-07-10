@@ -53,9 +53,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     findWorkingPhotoUrl();
   }, [person]);
   
-  // Format compensation with commas and dollar sign
-  const formattedCompensation = totalCompensation > 0 
-    ? `$${totalCompensation.toLocaleString()}`
+  // Format compensation with commas (dollar sign icon is displayed separately)
+  const formattedCompensation = totalCompensation > 0
+    ? totalCompensation.toLocaleString()
     : undefined;
 
   return (
@@ -98,9 +98,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
             {formattedCompensation && (
               <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row sm:items-center gap-1">
                 <span className="font-medium whitespace-nowrap">Total Compensation:</span>
-                <span className="flex items-center text-inadvertent-yellow">
-                  <DollarSign size={14} className="inline mr-0.5 flex-shrink-0" />
-                  <span className="break-all">{formattedCompensation}</span>
+                <span className="text-inadvertent-yellow break-all">
+                  ${formattedCompensation}
                 </span>
               </div>
             )}
