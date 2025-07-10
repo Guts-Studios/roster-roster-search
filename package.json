@@ -8,7 +8,12 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-migration": "cross-env VITE_SUPABASE_URL=https://pfnczqjveqiodbzafime.supabase.co VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmbmN6cWp2ZXFpb2RiemFmaW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAyMTA2ODEsImV4cCI6MjAzNTc4NjY4MX0.1_8_N551uCL4c_3iW6x4A23w3sQ2i2n3rgr5Qo2shPA ts-node scripts/generate-migration.ts",
+    "insert-personnel": "ts-node scripts/insert-personnel.ts",
+    "run-migration": "ts-node scripts/run-migration-directly.ts",
+    "generate-sql": "ts-node scripts/generate-insert-sql.ts",
+    "db:push": "npx supabase db push --db-url \"postgresql://postgres:postgres@pfnczqjveqiodbzafime.supabase.co:5432/postgres\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -49,6 +54,7 @@
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
+    "papaparse": "^5.5.3",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -70,6 +76,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
@@ -77,6 +84,7 @@
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"

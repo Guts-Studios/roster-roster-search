@@ -59,9 +59,9 @@ const ProfileDetails = () => {
   const totalCompensation = getTotalCompensation(person);
   const photoUrl = getPhotoUrl(person);
   
-  // Format compensation with commas and dollar sign
-  const formattedCompensation = totalCompensation > 0 
-    ? `$${totalCompensation.toLocaleString()}`
+  // Format compensation with commas (dollar sign icon is displayed separately)
+  const formattedCompensation = totalCompensation > 0
+    ? totalCompensation.toLocaleString()
     : "Not available";
 
   return (
@@ -118,8 +118,7 @@ const ProfileDetails = () => {
               
               <div className="border-l-2 border-inadvertent-yellow pl-4">
                 <h2 className="text-sm text-muted-foreground uppercase">Total Compensation</h2>
-                <p className="text-lg font-medium text-inadvertent-yellow flex items-center gap-1">
-                  <DollarSign size={16} className="inline" />
+                <p className="text-lg font-medium text-inadvertent-yellow">
                   {formattedCompensation}
                 </p>
               </div>
