@@ -33,11 +33,13 @@ const Navbar = () => {
 
           {/* Logo in center */}
           <div className="absolute left-1/2 transform -translate-x-1/2">
-            <img
-              src="/logo/logo.webp"
-              alt="Logo"
-              className="h-10 w-auto object-contain"
-            />
+            <Link to="/" className="cursor-pointer">
+              <img
+                src="/logo/logo.webp"
+                alt="Logo"
+                className="h-10 w-auto object-contain hover:opacity-80 transition-opacity"
+              />
+            </Link>
           </div>
 
           {/* Desktop Navigation - moved to right */}
