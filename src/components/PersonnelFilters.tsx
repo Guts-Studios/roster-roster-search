@@ -76,7 +76,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="All Divisions" />
               </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg max-h-48 overflow-y-auto z-50">
+              <SelectContent className="bg-card border shadow-lg max-h-48 overflow-y-auto z-50">
                 <SelectItem value="all">All Divisions</SelectItem>
                 {divisions.map((division) => (
                   <SelectItem key={division} value={division}>{division}</SelectItem>
@@ -92,7 +92,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg z-50">
+              <SelectContent className="bg-card border shadow-lg z-50">
                 <SelectItem value="name">Name</SelectItem>
                 <SelectItem value="regular_pay">Base Pay</SelectItem>
                 <SelectItem value="overtime">Overtime</SelectItem>
@@ -108,7 +108,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg z-50">
+              <SelectContent className="bg-card border shadow-lg z-50">
                 <SelectItem value="asc">Ascending</SelectItem>
                 <SelectItem value="desc">Descending</SelectItem>
               </SelectContent>
@@ -122,7 +122,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg z-50">
+              <SelectContent className="bg-card border shadow-lg z-50">
                 <SelectItem value="10">10</SelectItem>
                 <SelectItem value="25">25</SelectItem>
                 <SelectItem value="50">50</SelectItem>

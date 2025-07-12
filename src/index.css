@@ -2,96 +2,271 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Redaction Font Family */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Redaction 10 - Lightest weight */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_10-Regular.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_10-Bold.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_10-Italic.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Redaction 20 */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_20-Regular.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_20-Bold.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_20-Italic.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Redaction 35 */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_35-Regular.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_35-Bold.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_35-Italic.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Redaction 50 */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_50-Regular.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_50-Bold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_50-Italic.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Redaction 70 */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_70-Regular.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_70-Bold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_70-Italic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Redaction 100 - Heaviest weight */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_100-Regular.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_100-Bold.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Redaction';
+  src: url('/font_kit/Redaction_100-Italic.woff2') format('woff2');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    /* Inadvertent Substack color scheme - Light cream/beige theme */
-    --background: 45 25% 95%;
-    --foreground: 20 14% 20%;
+    /* Updated color scheme - Warm off-white background with very dark text */
+    --background: 45 50% 94%;
+    --foreground: 0 0% 4%;
 
-    --card: 45 25% 98%;
-    --card-foreground: 20 14% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
 
-    --popover: 45 25% 98%;
-    --popover-foreground: 20 14% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
 
-    --primary: 45 90% 55%;
-    --primary-foreground: 20 14% 20%;
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 15% 85%;
-    --secondary-foreground: 20 14% 20%;
+    --secondary: 45 20% 88%;
+    --secondary-foreground: 0 0% 4%;
 
-    --muted: 45 15% 90%;
-    --muted-foreground: 20 14% 45%;
+    --muted: 45 30% 90%;
+    --muted-foreground: 0 0% 25%;
 
-    --accent: 45 90% 55%;
-    --accent-foreground: 20 14% 20%;
+    --accent: 0 0% 4%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 45 15% 85%;
-    --input: 45 25% 98%;
-    --ring: 45 90% 55%;
+    --border: 45 20% 85%;
+    --input: 0 0% 100%;
+    --ring: 0 0% 4%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 45 25% 95%;
-    --sidebar-foreground: 20 14% 20%;
-    --sidebar-primary: 45 90% 55%;
-    --sidebar-primary-foreground: 20 14% 20%;
-    --sidebar-accent: 45 15% 90%;
-    --sidebar-accent-foreground: 20 14% 20%;
-    --sidebar-border: 45 15% 85%;
-    --sidebar-ring: 45 90% 55%;
+    --sidebar-background: 45 50% 94%;
+    --sidebar-foreground: 0 0% 4%;
+    --sidebar-primary: 0 0% 4%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 45 30% 90%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 45 20% 85%;
+    --sidebar-ring: 0 0% 4%;
     
-    /* Inadvertent theme specific colors */
-    --inadvertent-yellow: 45 90% 55%;
-    --inadvertent-yellow-hover: 45 90% 50%;
-    --inadvertent-cream: 45 25% 95%;
-    --inadvertent-dark-cream: 45 15% 85%;
-    --inadvertent-light-cream: 45 25% 98%;
-    --inadvertent-dark-text: 20 14% 20%;
-    --inadvertent-muted-text: 20 14% 45%;
+    /* Updated inadvertent theme specific colors */
+    --inadvertent-yellow: 0 0% 4%;
+    --inadvertent-yellow-hover: 0 0% 10%;
+    --inadvertent-cream: 45 50% 94%;
+    --inadvertent-dark-cream: 45 20% 88%;
+    --inadvertent-light-cream: 0 0% 100%;
+    --inadvertent-dark-text: 0 0% 4%;
+    --inadvertent-muted-text: 0 0% 25%;
   }
 
   .dark {
-    /* Keep same colors for dark mode to maintain consistency */
-    --background: 45 25% 95%;
-    --foreground: 20 14% 20%;
+    /* Use same colors for dark mode to maintain consistency */
+    --background: 45 50% 94%;
+    --foreground: 0 0% 4%;
 
-    --card: 45 25% 98%;
-    --card-foreground: 20 14% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
 
-    --popover: 45 25% 98%;
-    --popover-foreground: 20 14% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
 
-    --primary: 45 90% 55%;
-    --primary-foreground: 20 14% 20%;
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 15% 85%;
-    --secondary-foreground: 20 14% 20%;
+    --secondary: 45 20% 88%;
+    --secondary-foreground: 0 0% 4%;
 
-    --muted: 45 15% 90%;
-    --muted-foreground: 20 14% 45%;
+    --muted: 45 30% 90%;
+    --muted-foreground: 0 0% 25%;
 
-    --accent: 45 90% 55%;
-    --accent-foreground: 20 14% 20%;
+    --accent: 0 0% 4%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 45 15% 85%;
-    --input: 45 25% 98%;
-    --ring: 45 90% 55%;
+    --border: 45 20% 85%;
+    --input: 0 0% 100%;
+    --ring: 0 0% 4%;
 
-    --sidebar-background: 45 25% 95%;
-    --sidebar-foreground: 20 14% 20%;
-    --sidebar-primary: 45 90% 55%;
-    --sidebar-primary-foreground: 20 14% 20%;
-    --sidebar-accent: 45 15% 90%;
-    --sidebar-accent-foreground: 20 14% 20%;
-    --sidebar-border: 45 15% 85%;
-    --sidebar-ring: 45 90% 55%;
+    --sidebar-background: 45 50% 94%;
+    --sidebar-foreground: 0 0% 4%;
+    --sidebar-primary: 0 0% 4%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 45 30% 90%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 45 20% 85%;
+    --sidebar-ring: 0 0% 4%;
   }
 }
 
@@ -101,6 +276,23 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Ensure Redaction font is applied universally */
+  html,
+  body,
+  * {
+    font-family: 'Redaction', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  }
+
+  /* Ensure all headings use Redaction */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Redaction', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  }
+
+  /* Ensure all input elements use Redaction */
+  input, textarea, select, button {
+    font-family: 'Redaction', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   }
 }

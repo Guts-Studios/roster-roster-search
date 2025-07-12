@@ -24,9 +24,6 @@ const Navbar = () => {
     { to: "/about", icon: Info, label: "About" },
   ];
 
-  // Show "No Secret Police" in center for Statistics and About pages
-  const showCenterTitle = location.pathname === "/statistics" || location.pathname === "/about";
-
   return (
     <header className="sticky top-0 z-10 w-full bg-inadvertent-dark-cream shadow-md border-b border-border">
       <div className="container mx-auto px-4">
@@ -34,12 +31,14 @@ const Navbar = () => {
           {/* Empty left side for spacing */}
           <div className="hidden md:block"></div>
 
-          {/* Center title for Statistics and About pages */}
-          {showCenterTitle && (
-            <div className="absolute left-1/2 transform -translate-x-1/2">
-              <h1 className="text-xl font-bold text-foreground">No Secret Police</h1>
-            </div>
-          )}
+          {/* Logo in center */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
+            <img
+              src="/logo/logo.webp"
+              alt="Logo"
+              className="h-10 w-auto object-contain"
+            />
+          </div>
 
           {/* Desktop Navigation - moved to right */}
           <div className="hidden md:block">

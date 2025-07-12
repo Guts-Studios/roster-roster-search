@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search as SearchIcon, X } from "lucide-react";
@@ -204,7 +205,13 @@ const Search = () => {
         {!hasSearchCriteria && (
           <div className="mt-8 text-center">
             <p className="text-lg text-muted-foreground">
-              Start typing a name or badge number to search personnel records
+              View full roster{" "}
+              <Link
+                to="/roster"
+                className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
+              >
+                here
+              </Link>
             </p>
           </div>
         )}
