@@ -221,7 +221,7 @@ const Statistics = () => {
             <div className="flex-1 relative">
               <Input
                 type="text"
-                placeholder="Last or First Name or Badge"
+                placeholder="Enter a name or badge number to search for an officer"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -305,7 +305,7 @@ const Statistics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="limit" className="text-foreground">Top Results</Label>
                 <Input
@@ -334,35 +334,6 @@ const Statistics = () => {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="division" className="text-foreground">Division</Label>
-                <Select value={filters.division || 'all'} onValueChange={(value) => updateFilter('division', value)}>
-                  <SelectTrigger className="mt-1 bg-input border-border text-foreground">
-                    <SelectValue placeholder="All Divisions" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="all">All Divisions</SelectItem>
-                    {uniqueValues?.divisions.map((division) => (
-                      <SelectItem key={division} value={division}>{division}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="classification" className="text-foreground">Classification</Label>
-                <Select value={filters.classification || 'all'} onValueChange={(value) => updateFilter('classification', value)}>
-                  <SelectTrigger className="mt-1 bg-input border-border text-foreground">
-                    <SelectValue placeholder="All Classifications" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="all">All Classifications</SelectItem>
-                    {uniqueValues?.classifications.map((classification) => (
-                      <SelectItem key={classification} value={classification}>{classification}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="flex items-end">
                 <Button onClick={clearFilters} variant="outline" className="w-full border-border text-foreground hover:bg-muted">
@@ -375,7 +346,7 @@ const Statistics = () => {
 
         {/* Summary Cards */}
         {aggregates && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -402,37 +373,11 @@ const Statistics = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Average Compensation</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      ${Math.round(aggregates.avgCompensation).toLocaleString()}
-                    </p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-inadvertent-yellow" />
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Overtime</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      ${aggregates.totalOvertime.toLocaleString()}
-                    </p>
-                  </div>
-                  <BarChart3 className="h-8 w-8 text-inadvertent-yellow" />
-                </div>
-              </CardContent>
-            </Card>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="mb-6">
           {/* Top Salaries */}
           <Card className="bg-card border-border">
             <CardHeader>
@@ -476,40 +421,6 @@ const Statistics = () => {
             </CardContent>
           </Card>
 
-          {/* Division Breakdown */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Division Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingAggs ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-inadvertent-yellow"></div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {aggregates && Object.entries(aggregates.divisionBreakdown)
-                    .sort(([,a], [,b]) => b.totalCompensation - a.totalCompensation)
-                    .map(([division, stats]) => (
-                      <div key={division} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <div>
-                          <p className="font-semibold text-foreground">{division}</p>
-                          <p className="text-sm text-muted-foreground">{stats.count} records</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-inadvertent-yellow">
-                            ${stats.totalCompensation.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Avg: ${Math.round(stats.totalCompensation / stats.count).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
           </div>
         )}

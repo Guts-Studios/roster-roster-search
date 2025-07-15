@@ -146,7 +146,7 @@ const Search = () => {
             <div className="flex-1 relative">
               <Input
                 type="text"
-                placeholder="Last or First Name or Badge"
+                placeholder="Enter a name or badge number to search for an officer"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
