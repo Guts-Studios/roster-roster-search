@@ -5,6 +5,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-07-14
+
+### Added
+- **Redaction Font Integration**: Implemented complete Redaction font family with multiple weights
+  - Added Redaction Regular, Bold, and Italic variants
+  - Added Redaction 10 (light weight) for subtle styling
+  - Applied font universally across all elements including headings, inputs, and buttons
+  - Added proper font-display: swap for performance
+- **Logo Integration**: Added clickable logo functionality
+  - Centered logo in navigation header
+  - Added hover effects and proper linking to home page
+  - Logo sourced from `/logo/logo.webp`
+- **Full Roster Page**: Created new comprehensive personnel directory
+  - Complete personnel listing with pagination
+  - Accessible via `/roster` route
+  - Uses `useAllPersonnel` hook for data fetching
+  - Responsive design with mobile optimization
+- **Enhanced About Page**: Major content and functionality updates
+  - Added comprehensive project background and history
+  - Integrated search functionality directly in About page
+  - Added hyperlinks to external resources (Inadvertent Substack, Ben Camacho's site)
+  - Detailed explanation of public records process and legal battles
+- **Input Field Visibility**: Enhanced form accessibility
+  - Added permanent black outlines (2px solid #000000) to all input fields
+  - Improved visibility across all input types (text, email, password, etc.)
+  - Maintained focus and hover states with consistent black borders
+
+### Changed
+- **Color Scheme Overhaul**: Migrated from yellow accents to black-based design
+  - Updated accent colors from yellow (#f59e0b) to black (#000000)
+  - Changed hover states to darker black (#1a1a1a)
+  - Maintained warm cream backgrounds with improved contrast
+  - Updated all CSS custom properties for consistency
+- **Navigation Improvements**: Enhanced header layout and spacing
+  - Improved mobile responsiveness
+  - Better logo positioning and navigation item spacing
+  - Enhanced hamburger menu functionality
+- **Typography System**: Complete font integration
+  - Replaced system fonts with Redaction font family
+  - Improved readability and visual consistency
+  - Better font weight hierarchy (300, 400, 600, 700)
+
+### Technical Improvements
+- **Font Loading Optimization**: Implemented efficient font loading strategy
+  - Added font-display: swap for better performance
+  - Organized font variants by weight and style
+  - Comprehensive fallback font stack
+- **Component Architecture**: Enhanced component structure
+  - Added `FullRoster.tsx` page component
+  - Updated `App.tsx` routing for new pages
+  - Improved navigation component with logo integration
+- **CSS Architecture**: Streamlined styling system
+  - Updated CSS custom properties for new color scheme
+  - Enhanced input styling with permanent borders
+  - Improved responsive design patterns
+
+### Files Modified
+- `src/index.css` - Complete font integration and color scheme updates
+- `src/pages/About.tsx` - Major content updates and search integration
+- `src/pages/FullRoster.tsx` - New page for complete personnel directory
+- `src/components/Navbar.tsx` - Logo integration and navigation improvements
+- `src/App.tsx` - Updated routing for new pages
+- `public/font_kit/` - Added complete Redaction font family
+- `public/logo/logo.webp` - Added project logo
+
+### Dependencies
+- No new dependencies added
+- Enhanced existing font loading capabilities
+
 ## [1.0.0] - 2025-01-07
 
 ### Added

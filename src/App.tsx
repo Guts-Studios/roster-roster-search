@@ -21,15 +21,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Search />} />
-          <Route path="/roster" element={<FullRoster />} />
-          <Route path="/profile/:id" element={<ProfileDetails />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/about" element={<About />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <main className="pt-48">
+          <Routes>
+            <Route path="/" element={<Search />} />
+            <Route path="/roster" element={<FullRoster />} />
+            <Route path="/profile/:id" element={<ProfileDetails />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/about" element={<About />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

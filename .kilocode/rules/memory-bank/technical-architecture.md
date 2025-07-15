@@ -11,12 +11,13 @@ src/
 │   └── RosterList.tsx       # Personnel list container
 ├── hooks/
 │   ├── useAuth.ts           # Authentication state management
-│   └── useAdvancedPersonnel.ts # Personnel search and filtering
+│   ├── useAdvancedPersonnel.ts # Personnel search and filtering
+│   └── useAllPersonnel.ts   # Complete personnel directory fetching
 ├── pages/
-│   ├── Index.tsx            # Landing page
 │   ├── Search.tsx           # Main search functionality (protected)
+│   ├── FullRoster.tsx       # Complete personnel directory
 │   ├── Statistics.tsx       # Analytics dashboard (protected)
-│   ├── About.tsx            # Generic about page
+│   ├── About.tsx            # Enhanced about page with search integration
 │   └── ProfileDetails.tsx   # Individual profile view
 ├── utils/
 │   └── auth.ts              # Password hashing utilities
@@ -54,6 +55,8 @@ src/
 
 ## Styling System
 - **Framework**: Tailwind CSS
-- **Theme**: Custom Inadvertent Substack colors
+- **Theme**: Custom Inadvertent Substack colors with black accents
+- **Typography**: Redaction font family with optimized loading
 - **Responsive**: Mobile-first design
-- **Navigation**: Hamburger menu for mobile
+- **Navigation**: Hamburger menu for mobile with centered logo
+- **Input Accessibility**: Permanent black borders for enhanced visibility

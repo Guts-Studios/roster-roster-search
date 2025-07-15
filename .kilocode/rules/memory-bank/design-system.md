@@ -3,23 +3,31 @@
 ## Color Palette
 - **Primary Background**: `#fefcf0` (cream/beige)
 - **Secondary Background**: `#f8f6e8` (slightly darker cream)
-- **Text Primary**: `#1a1a1a` (dark gray/black)
-- **Text Secondary**: `#4a4a4a` (medium gray)
-- **Accent Color**: `#f59e0b` (yellow/amber)
-- **Accent Hover**: `#d97706` (darker yellow)
-- **Border Color**: `#e5e5e5` (light gray)
+- **Text Primary**: `#0a0a0a` (very dark gray/black)
+- **Text Secondary**: `#404040` (medium gray)
+- **Accent Color**: `#000000` (black)
+- **Accent Hover**: `#1a1a1a` (dark gray)
+- **Border Color**: `#d4d4d4` (light gray)
+- **Input Borders**: `#000000` (permanent black outlines)
 
 ## Typography
-- **Font Family**: System fonts (sans-serif stack)
-- **Headings**: Bold, dark text
-- **Body Text**: Regular weight, good contrast
-- **Interactive Elements**: Hover states with accent colors
+- **Font Family**: Redaction font family with fallback to system fonts
+- **Font Weights**:
+  - Light (300): Redaction 10 variants
+  - Regular (400): Standard Redaction
+  - Semi-bold (600): Redaction 10 Bold
+  - Bold (700): Redaction Bold
+- **Font Styles**: Regular and Italic variants available
+- **Font Loading**: Optimized with font-display: swap
+- **Headings**: Bold Redaction font, dark text
+- **Body Text**: Regular Redaction font, good contrast
+- **Interactive Elements**: Consistent font with hover states
 
 ## Component Patterns
 - **Cards**: White backgrounds with subtle shadows
-- **Buttons**: Yellow accent with hover states
-- **Forms**: Clean inputs with proper spacing
-- **Navigation**: Mobile-first with hamburger menu
+- **Buttons**: Black accent with hover states
+- **Forms**: Clean inputs with permanent black outlines for visibility
+- **Navigation**: Mobile-first with hamburger menu and centered logo
 
 ## Portrait Display Rules
 - **Format**: Rectangular (4:5 aspect ratio)

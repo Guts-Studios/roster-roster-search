@@ -3,8 +3,9 @@
 ## Current Status
 - **Project Name**: No Secret Police
 - **Tagline**: "A project by inadvertent"
-- **Version**: 1.0.0
-- **Theme**: Inadvertent Substack (cream/beige backgrounds, dark text, yellow accents)
+- **Version**: 2.0.0
+- **Theme**: Inadvertent Substack (cream/beige backgrounds, dark text, black accents)
+- **Typography**: Redaction font family with multiple weights
 
 ## Technology Stack
 - **Frontend**: React 18 with TypeScript
@@ -15,11 +16,13 @@
 
 ## Key Features
 - Personnel search with separate fields (first name, last name, badge number)
-- Password-protected access (Search and Statistics pages)
-- Mobile-responsive design with hamburger navigation
+- Full roster page with complete personnel directory
+- Enhanced About page with integrated search functionality
+- Mobile-responsive design with hamburger navigation and centered logo
 - Rectangular portrait display (no face cropping)
 - Statistics dashboard
 - Individual profile detail pages
+- Redaction font integration across all components
 
 ## Authentication
 - Password: "WatchtheWatchers2024!" (stored securely in Supabase)
@@ -27,7 +30,7 @@
 - Protected routes: Search, Statistics
 
 ## Current Architecture
-- **Pages**: Home (landing), Search (main functionality), Statistics, About, ProfileDetails
+- **Pages**: Search (main functionality), FullRoster, Statistics, About, ProfileDetails
 - **Components**: Navbar, ProfileCard, PersonnelFilters, Pagination, RosterList
-- **Hooks**: useAuth, useAdvancedPersonnel
+- **Hooks**: useAuth, useAdvancedPersonnel, useAllPersonnel
 - **Database**: Supabase integration with personnel data
