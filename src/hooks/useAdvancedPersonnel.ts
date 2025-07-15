@@ -23,7 +23,7 @@ export interface PersonnelResponse {
 export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
   const hasSearchCriteria = !!(filters.firstName || filters.lastName || filters.badgeNumber);
   
-  return useQuery({
+  const queryResult = useQuery({
     queryKey: ["personnel-advanced", filters],
     enabled: hasSearchCriteria,
     queryFn: async (): Promise<PersonnelResponse> => {
@@ -31,13 +31,20 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         .from("personnel")
         .select("*");
 
-      // Apply individual search filters
-      if (filters.firstName && filters.firstName.trim()) {
-        query = query.ilike("first_name", `%${filters.firstName}%`);
-      }
-      
-      if (filters.lastName && filters.lastName.trim()) {
-        query = query.ilike("last_name", `%${filters.lastName}%`);
+      // Apply individual search filters with OR logic for names when they're the same
+      if (filters.firstName && filters.lastName && filters.firstName === filters.lastName) {
+        // If firstName and lastName are the same, search both fields with OR logic
+        const orQuery = `first_name.ilike.%${filters.firstName}%,last_name.ilike.%${filters.firstName}%`;
+        query = query.or(orQuery);
+      } else {
+        // Apply individual filters with AND logic
+        if (filters.firstName && filters.firstName.trim()) {
+          query = query.ilike("first_name", `%${filters.firstName}%`);
+        }
+        
+        if (filters.lastName && filters.lastName.trim()) {
+          query = query.ilike("last_name", `%${filters.lastName}%`);
+        }
       }
       
       if (filters.badgeNumber && filters.badgeNumber.trim()) {
@@ -54,13 +61,19 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         .from("personnel")
         .select("*", { count: 'exact', head: true });
 
-      // Apply same filters to count query
-      if (filters.firstName && filters.firstName.trim()) {
-        countQuery = countQuery.ilike("first_name", `%${filters.firstName}%`);
-      }
-      
-      if (filters.lastName && filters.lastName.trim()) {
-        countQuery = countQuery.ilike("last_name", `%${filters.lastName}%`);
+      // Apply same filters to count query with OR logic for names when they're the same
+      if (filters.firstName && filters.lastName && filters.firstName === filters.lastName) {
+        // If firstName and lastName are the same, search both fields with OR logic
+        countQuery = countQuery.or(`first_name.ilike.%${filters.firstName}%,last_name.ilike.%${filters.firstName}%`);
+      } else {
+        // Apply individual filters with AND logic
+        if (filters.firstName && filters.firstName.trim()) {
+          countQuery = countQuery.ilike("first_name", `%${filters.firstName}%`);
+        }
+        
+        if (filters.lastName && filters.lastName.trim()) {
+          countQuery = countQuery.ilike("last_name", `%${filters.lastName}%`);
+        }
       }
       
       if (filters.badgeNumber && filters.badgeNumber.trim()) {
@@ -114,6 +127,8 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
       };
     },
   });
+  
+  return queryResult;
 };
 
 export const usePersonnelFilterOptions = () => {

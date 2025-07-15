@@ -1,0 +1,9 @@
+-- Add public read access policy for personnel table
+-- This allows anonymous users to read personnel data for the public records database
+-- while keeping write operations restricted to authenticated users
+
+CREATE POLICY "Allow public read access to personnel" 
+ON public.personnel 
+FOR SELECT 
+TO anon
+USING (true);
