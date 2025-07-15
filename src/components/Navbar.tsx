@@ -51,7 +51,7 @@ const Navbar = () => {
                     <Link to={to}>
                       <NavigationMenuLink
                         className={cn(
-                          "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors",
+                          "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:border-2 hover:border-black rounded-md transition-all border-2 border-transparent",
                         )}
                       >
                         <Icon size={16} />
@@ -70,7 +70,7 @@ const Navbar = () => {
               variant="ghost"
               size="sm"
               onClick={toggleMobileMenu}
-              className="text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text"
+              className="text-foreground hover:border-2 hover:border-black border-2 border-transparent transition-all"
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </Button>
@@ -86,7 +86,7 @@ const Navbar = () => {
                   key={to}
                   to={to}
                   onClick={closeMobileMenu}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-inadvertent-yellow hover:text-inadvertent-dark-text rounded-md transition-colors block"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:border-2 hover:border-black rounded-md transition-all border-2 border-transparent block"
                 >
                   <Icon size={16} />
                   <span>{label}</span>

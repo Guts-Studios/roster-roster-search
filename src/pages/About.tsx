@@ -117,100 +117,14 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <>
-                <Input
-                  type="text"
-                  placeholder="Name or Badge"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="pr-10 text-lg py-3 sm:hidden"
-                />
-                <Input
-                  type="text"
-                  placeholder="Last or First Name or Badge"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="pr-10 text-lg py-3 hidden sm:block"
-                />
-              </>
-              {searchQuery && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={handleClearSearch}
-                >
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              )}
-            </div>
-            <Button
-              onClick={handleSearch}
-              disabled={!searchQuery.trim()}
-              className="bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover px-6 py-3"
-            >
-              <SearchIcon className="h-5 w-5" />
-            </Button>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-2 text-inadvertent-yellow">About</h1>
           </div>
-        </div>
-
-        {/* Search Results or About Content */}
-        {hasSearchCriteria ? (
-          <div>
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">Search Results</h1>
-              <p className="text-muted-foreground">Personnel search from the About page</p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
-              <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-                Search Results
-              </h2>
-              <div className="text-xs sm:text-sm text-muted-foreground">
-                {searchLoading ? "Searching..." : `${searchResponse?.totalCount || 0} records found`}
-              </div>
-            </div>
-            
-            {searchError ? (
-              <div className="text-center py-8">
-                <div className="text-red-600">Error searching personnel</div>
-              </div>
-            ) : (
-              <>
-                <RosterList
-                  personnel={searchResponse?.data || []}
-                  isLoading={searchLoading}
-                />
-                
-                {searchResponse && searchResponse.totalCount > 0 && (
-                  <Pagination
-                    currentPage={searchResponse.currentPage}
-                    totalPages={searchResponse.totalPages}
-                    totalCount={searchResponse.totalCount}
-                    pageSize={searchFilters.pageSize}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-2 text-inadvertent-yellow">About</h1>
-              <p className="text-lg text-foreground">A public records database by <a href="https://inadvertent.substack.com/" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">Inadvertent</a></p>
-            </div>
             
             <div className="bg-card p-8 rounded-lg shadow-md border border-border">
               <p className="mb-6">
-                No Secret Police is a public records database created by Inadvertent.
+                No Secret Police is a public records database created by <a href="https://inadvertent.substack.com/" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">Inadvertent</a>.
               </p>
               
               <p className="mb-6">
@@ -254,7 +168,6 @@ const About = () => {
               </p>
             </div>
           </div>
-        )}
       </div>
     </div>
   );

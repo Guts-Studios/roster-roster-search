@@ -39,14 +39,10 @@ const FullRoster = () => {
       <div className="container mx-auto px-4 py-4 sm:py-6">
         <div className="mb-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">Full Roster</h1>
-          <p className="text-lg text-muted-foreground">Complete personnel directory</p>
         </div>
 
         <div className="mt-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              All Personnel
-            </h2>
             <div className="text-xs sm:text-sm text-muted-foreground">
               {isLoading ? "Loading..." : `${personnelResponse?.totalCount || 0} total records`}
             </div>

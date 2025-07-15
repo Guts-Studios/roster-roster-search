@@ -208,6 +208,13 @@ const Statistics = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-5xl font-bold text-foreground">
+            No Secret Police
+          </h1>
+        </div>
+
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8">
           <div className="flex gap-2">

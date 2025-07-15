@@ -14,7 +14,7 @@ const Home = () => {
             No Secret Police
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            A project by inadvertent
+            A public records database
           </p>
           <div className="flex justify-center gap-4">
             <Link to="/search">
