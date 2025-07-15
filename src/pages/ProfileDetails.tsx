@@ -76,7 +76,7 @@ const ProfileDetails = () => {
         <Card className="w-full max-w-4xl mx-auto border-border bg-card">
           <CardHeader className="bg-gradient-to-r from-inadvertent-yellow/10 to-inadvertent-yellow/5 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <div className="relative h-32 w-24 sm:h-40 sm:w-32 bg-inadvertent-yellow border-4 border-inadvertent-yellow flex-shrink-0 rounded-lg overflow-hidden">
+              <div className="relative h-48 w-36 sm:h-60 sm:w-48 bg-inadvertent-yellow border-4 border-inadvertent-yellow flex-shrink-0 rounded-lg overflow-hidden">
                 {photoUrl ? (
                   <img
                     src={photoUrl}
