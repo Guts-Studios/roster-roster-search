@@ -28,7 +28,7 @@ const ProfileDetails = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
           <p className="text-muted-foreground mb-6">You need to be authenticated to view public records.</p>
-          <Link to="/">
+          <Link to="/roster">
             <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
               <ArrowLeft size={16} /> Return to Roster
             </Button>
@@ -44,7 +44,7 @@ const ProfileDetails = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Profile Not Found</h1>
           <p className="text-muted-foreground mb-6">The requested profile could not be found.</p>
-          <Link to="/">
+          <Link to="/roster">
             <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
               <ArrowLeft size={16} /> Return to Roster
             </Button>
@@ -67,7 +67,7 @@ const ProfileDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/" className="inline-flex items-center text-inadvertent-yellow hover:text-foreground mb-6">
+        <Link to="/roster" className="inline-flex items-center text-inadvertent-yellow hover:text-foreground mb-6">
           <Button variant="outline" className="border-inadvertent-yellow text-inadvertent-yellow hover:bg-inadvertent-yellow/10">
             <ArrowLeft size={16} className="mr-2" /> Back to Roster
           </Button>
