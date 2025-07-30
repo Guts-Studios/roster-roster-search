@@ -40,14 +40,31 @@ const Search = () => {
             page: 1
           }));
         } else {
-          // For names, search in both first and last name
-          setFilters(prev => ({
-            ...prev,
-            firstName: searchQuery.trim(),
-            lastName: searchQuery.trim(),
-            badgeNumber: '',
-            page: 1
-          }));
+          // Parse name input to handle both single names and full names
+          const nameParts = searchQuery.trim().split(/\s+/);
+          
+          if (nameParts.length === 1) {
+            // Single name: search both first and last name fields
+            const singleName = nameParts[0];
+            setFilters(prev => ({
+              ...prev,
+              firstName: singleName,
+              lastName: singleName,
+              badgeNumber: '',
+              page: 1
+            }));
+          } else {
+            // Multiple names: treat as first name + last name
+            const firstName = nameParts[0];
+            const lastName = nameParts.slice(1).join(' ');
+            setFilters(prev => ({
+              ...prev,
+              firstName: firstName,
+              lastName: lastName,
+              badgeNumber: '',
+              page: 1
+            }));
+          }
         }
       } else {
         // Clear results when search query is empty
@@ -80,14 +97,31 @@ const Search = () => {
           page: 1
         }));
       } else {
-        // For names, search in both first and last name
-        setFilters(prev => ({
-          ...prev,
-          firstName: searchQuery.trim(),
-          lastName: searchQuery.trim(),
-          badgeNumber: '',
-          page: 1
-        }));
+        // Parse name input to handle both single names and full names
+        const nameParts = searchQuery.trim().split(/\s+/);
+        
+        if (nameParts.length === 1) {
+          // Single name: search both first and last name fields
+          const singleName = nameParts[0];
+          setFilters(prev => ({
+            ...prev,
+            firstName: singleName,
+            lastName: singleName,
+            badgeNumber: '',
+            page: 1
+          }));
+        } else {
+          // Multiple names: treat as first name + last name
+          const firstName = nameParts[0];
+          const lastName = nameParts.slice(1).join(' ');
+          setFilters(prev => ({
+            ...prev,
+            firstName: firstName,
+            lastName: lastName,
+            badgeNumber: '',
+            page: 1
+          }));
+        }
       }
     }
   };

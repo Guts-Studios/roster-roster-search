@@ -31,13 +31,14 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         .from("personnel")
         .select("*");
 
-      // Apply individual search filters with OR logic for names when they're the same
+      // Apply search filters with smart logic
       if (filters.firstName && filters.lastName && filters.firstName === filters.lastName) {
-        // If firstName and lastName are the same, search both fields with OR logic
-        const orQuery = `first_name.ilike.%${filters.firstName}%,last_name.ilike.%${filters.firstName}%`;
+        // Single name search: use OR logic to search both first and last name fields
+        const searchTerm = filters.firstName.trim();
+        const orQuery = `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`;
         query = query.or(orQuery);
       } else {
-        // Apply individual filters with AND logic
+        // Full name search: use AND logic for separate first and last names
         if (filters.firstName && filters.firstName.trim()) {
           query = query.ilike("first_name", `%${filters.firstName}%`);
         }
@@ -61,12 +62,13 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         .from("personnel")
         .select("*", { count: 'exact', head: true });
 
-      // Apply same filters to count query with OR logic for names when they're the same
+      // Apply same filters to count query with smart logic
       if (filters.firstName && filters.lastName && filters.firstName === filters.lastName) {
-        // If firstName and lastName are the same, search both fields with OR logic
-        countQuery = countQuery.or(`first_name.ilike.%${filters.firstName}%,last_name.ilike.%${filters.firstName}%`);
+        // Single name search: use OR logic to search both first and last name fields
+        const searchTerm = filters.firstName.trim();
+        countQuery = countQuery.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
       } else {
-        // Apply individual filters with AND logic
+        // Full name search: use AND logic for separate first and last names
         if (filters.firstName && filters.firstName.trim()) {
           countQuery = countQuery.ilike("first_name", `%${filters.firstName}%`);
         }
