@@ -75,7 +75,7 @@ const ProfileDetails = () => {
         </Link>
         
         {/* Enhanced Profile Details Card - No gray background */}
-        <div className="w-full max-w-5xl mx-auto bg-white rounded-lg shadow-lg border border-gray-200">
+        <div className="w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg border border-gray-200">
           {/* Header Section with Enhanced Styling */}
           <div className="bg-gradient-to-r from-gray-50 to-white p-8 rounded-t-lg">
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
