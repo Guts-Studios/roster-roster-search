@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // Secure password verification using Supabase and hashing
-// The actual password is "WatchtheWatchers2024!"
 
 // Hash function using Web Crypto API
 const hashPassword = async (password: string, salt: string): Promise<string> => {
@@ -24,8 +23,7 @@ export const verifyPassword = async (inputPassword: string): Promise<boolean> =>
 
     if (error) {
       console.error('Error fetching password hash:', error);
-      // Fallback to client-side verification if Supabase fails
-      return inputPassword === 'WatchtheWatchers2024!';
+      return false;
     }
 
     if (!data) {
@@ -41,8 +39,7 @@ export const verifyPassword = async (inputPassword: string): Promise<boolean> =>
     return inputHash === data.value;
   } catch (error) {
     console.error('Error verifying password:', error);
-    // Fallback to client-side verification
-    return inputPassword === 'WatchtheWatchers2024!';
+    return false;
   }
 };
 
@@ -62,7 +59,7 @@ export const updatePasswordHash = async (newPassword: string): Promise<boolean> 
       .upsert({
         key: 'search_password_hash',
         value: hashedPassword,
-        description: `Hashed password for search access - ${newPassword}`
+        description: 'Hashed password for search access'
       });
 
     if (error) {
