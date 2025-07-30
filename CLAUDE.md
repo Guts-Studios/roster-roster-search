@@ -62,5 +62,5 @@ This is a React application for searching and displaying public personnel record
 ### Build and Deployment
 - Vite build system with SWC for fast compilation
 - Development server runs on port 8080
-- Lovable platform integration for deployment
+- Platform integration for deployment
 - Environment variables for Supabase connection
