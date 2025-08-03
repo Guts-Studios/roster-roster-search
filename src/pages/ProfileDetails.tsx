@@ -134,6 +134,11 @@ const ProfileDetails = () => {
             </div>
           </div>
           
+          {/* Data Disclaimer */}
+          <div className="px-8 py-4 bg-gray-50 border-t border-gray-200">
+            <p className="text-sm text-gray-600 text-center">Disclaimer: Data is current as of 2024</p>
+          </div>
+          
           {/* Enhanced Compensation Section */}
           <div className="p-8">
             <h3 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">

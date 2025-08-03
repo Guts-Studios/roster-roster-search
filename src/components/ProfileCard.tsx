@@ -116,6 +116,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
               </div>
             )}
           </div>
+          <div className="mt-3 text-center border-t border-border pt-2">
+            <p className="text-xs text-muted-foreground">Disclaimer: Data is current as of 2024</p>
+          </div>
         </CardContent>
       </Card>
     </Link>
