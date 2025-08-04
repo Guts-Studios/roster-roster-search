@@ -36,7 +36,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             <Input
               id="firstName"
               type="text"
-              placeholder="First name..."
+              placeholder="First Name"
               value={filters.firstName || ''}
               onChange={(e) => onFiltersChange({ firstName: e.target.value })}
               className="mt-1"
@@ -49,7 +49,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             <Input
               id="lastName"
               type="text"
-              placeholder="Last name..."
+              placeholder="Last Name"
               value={filters.lastName || ''}
               onChange={(e) => onFiltersChange({ lastName: e.target.value })}
               className="mt-1"
@@ -62,7 +62,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             <Input
               id="badgeNumber"
               type="text"
-              placeholder="Badge number..."
+              placeholder="Badge #"
               value={filters.badgeNumber || ''}
               onChange={(e) => onFiltersChange({ badgeNumber: e.target.value })}
               className="mt-1"
