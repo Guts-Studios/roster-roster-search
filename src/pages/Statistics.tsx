@@ -221,7 +221,7 @@ const Statistics = () => {
             <div className="flex-1 relative">
               <Input
                 type="text"
-                placeholder="Enter a name or badge number to search for an officer"
+                placeholder="Search name or badge #"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}

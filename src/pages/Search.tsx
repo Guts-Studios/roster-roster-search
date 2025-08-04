@@ -6,9 +6,11 @@ import { Search as SearchIcon, X } from "lucide-react";
 import RosterList from "../components/RosterList";
 import Pagination from "../components/Pagination";
 import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
+import { useResponsivePlaceholder } from "../hooks/useResponsivePlaceholder";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { getPlaceholder } = useResponsivePlaceholder();
   
   const [filters, setFilters] = useState<PersonnelFilters>({
     firstName: '',
@@ -180,7 +182,8 @@ const Search = () => {
             <div className="flex-1 relative">
               <Input
                 type="text"
-                placeholder="Enter a name or badge number to search for an officer"
+                inputMode="search"
+                placeholder={getPlaceholder("First name, last name, or badge number", "First or Last Name or Badge #")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}

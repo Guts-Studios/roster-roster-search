@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PersonnelFilters } from "@/hooks/useAdvancedPersonnel";
 import { Filter, X } from "lucide-react";
+import { useResponsivePlaceholder } from "@/hooks/useResponsivePlaceholder";
 
 interface PersonnelFiltersProps {
   filters: PersonnelFilters;
@@ -20,6 +21,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
   onClearFilters,
   divisions,
 }) => {
+  const { badgeNumberPlaceholder } = useResponsivePlaceholder();
   return (
     <Card className="mb-6">
       <CardHeader className="pb-4">
@@ -36,6 +38,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             <Input
               id="firstName"
               type="text"
+              inputMode="text"
               placeholder="First Name"
               value={filters.firstName || ''}
               onChange={(e) => onFiltersChange({ firstName: e.target.value })}
@@ -49,6 +52,7 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             <Input
               id="lastName"
               type="text"
+              inputMode="text"
               placeholder="Last Name"
               value={filters.lastName || ''}
               onChange={(e) => onFiltersChange({ lastName: e.target.value })}
@@ -62,7 +66,8 @@ const PersonnelFiltersComponent: React.FC<PersonnelFiltersProps> = ({
             <Input
               id="badgeNumber"
               type="text"
-              placeholder="Badge #"
+              inputMode="numeric"
+              placeholder={badgeNumberPlaceholder}
               value={filters.badgeNumber || ''}
               onChange={(e) => onFiltersChange({ badgeNumber: e.target.value })}
               className="mt-1"
