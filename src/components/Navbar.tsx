@@ -47,16 +47,17 @@ const Navbar = () => {
               <NavigationMenuList className="gap-2">
                 {navItems.map(({ to, icon: Icon, label }) => (
                   <NavigationMenuItem key={to}>
-                    <Link to={to}>
-                      <NavigationMenuLink
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to={to}
                         className={cn(
                           "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:border-2 hover:border-black rounded-md transition-all border-2 border-transparent",
                         )}
                       >
                         <Icon size={16} />
                         <span>{label}</span>
-                      </NavigationMenuLink>
-                    </Link>
+                      </Link>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
                 ))}
               </NavigationMenuList>
