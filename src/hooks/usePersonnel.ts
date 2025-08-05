@@ -1,21 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/database/client";
 import { Personnel } from "@/types";
 
 export const usePersonnel = () => {
   return useQuery({
     queryKey: ["personnel"],
     queryFn: async (): Promise<Personnel[]> => {
-      const { data, error } = await supabase
-        .from("personnel")
-        .select("*")
-        .order("last_name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      return data || [];
+      const personnel = await db.queryMany<Personnel>(
+        'SELECT * FROM personnel ORDER BY last_name ASC'
+      );
+      return personnel;
     },
   });
 };
@@ -26,17 +20,12 @@ export const usePersonnelById = (id: string) => {
     queryFn: async (): Promise<Personnel | null> => {
       if (!id) return null;
       
-      const { data, error } = await supabase
-        .from("personnel")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+      const person = await db.queryOne<Personnel>(
+        'SELECT * FROM personnel WHERE id = $1',
+        [id]
+      );
 
-      if (error) {
-        throw error;
-      }
-
-      return data;
+      return person || null;
     },
     enabled: !!id,
   });
@@ -47,26 +36,23 @@ export const usePersonnelSearch = (searchTerm: string) => {
     queryKey: ["personnel", "search", searchTerm],
     queryFn: async (): Promise<Personnel[]> => {
       if (!searchTerm.trim()) {
-        const { data, error } = await supabase
-          .from("personnel")
-          .select("*")
-          .order("last_name", { ascending: true });
-
-        if (error) throw error;
-        return data || [];
+        const personnel = await db.queryMany<Personnel>(
+          'SELECT * FROM personnel ORDER BY last_name ASC'
+        );
+        return personnel;
       }
 
-      const { data, error } = await supabase
-        .from("personnel")
-        .select("*")
-        .or(`last_name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,badge_number.ilike.%${searchTerm}%`)
-        .order("last_name", { ascending: true });
+      const searchPattern = `%${searchTerm}%`;
+      const personnel = await db.queryMany<Personnel>(
+        `SELECT * FROM personnel
+         WHERE last_name ILIKE $1
+            OR first_name ILIKE $1
+            OR badge_number ILIKE $1
+         ORDER BY last_name ASC`,
+        [searchPattern]
+      );
 
-      if (error) {
-        throw error;
-      }
-
-      return data || [];
+      return personnel;
     },
   });
 };

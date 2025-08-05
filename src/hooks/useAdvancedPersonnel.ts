@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/database/client";
 import { Personnel, getTotalCompensation } from "@/types";
 
 export interface PersonnelFilters {
@@ -27,88 +27,79 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
     queryKey: ["personnel-advanced", filters],
     enabled: hasSearchCriteria,
     queryFn: async (): Promise<PersonnelResponse> => {
-      let query = supabase
-        .from("personnel")
-        .select("*");
+      // Build WHERE conditions and parameters
+      const whereConditions: string[] = [];
+      const queryParams: any[] = [];
+      let paramCount = 0;
 
       // Apply search filters with smart logic
       if (filters.firstName && filters.lastName && filters.firstName === filters.lastName) {
         // Single name search: use OR logic to search both first and last name fields
         const searchTerm = filters.firstName.trim();
-        const orQuery = `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`;
-        query = query.or(orQuery);
+        paramCount++;
+        whereConditions.push(`(first_name ILIKE $${paramCount} OR last_name ILIKE $${paramCount})`);
+        queryParams.push(`%${searchTerm}%`);
       } else {
         // Full name search: use AND logic for separate first and last names
         if (filters.firstName && filters.firstName.trim()) {
-          query = query.ilike("first_name", `%${filters.firstName}%`);
+          paramCount++;
+          whereConditions.push(`first_name ILIKE $${paramCount}`);
+          queryParams.push(`%${filters.firstName}%`);
         }
         
         if (filters.lastName && filters.lastName.trim()) {
-          query = query.ilike("last_name", `%${filters.lastName}%`);
+          paramCount++;
+          whereConditions.push(`last_name ILIKE $${paramCount}`);
+          queryParams.push(`%${filters.lastName}%`);
         }
       }
       
       if (filters.badgeNumber && filters.badgeNumber.trim()) {
-        query = query.ilike("badge_number", `%${filters.badgeNumber}%`);
+        paramCount++;
+        whereConditions.push(`badge_number ILIKE $${paramCount}`);
+        queryParams.push(`%${filters.badgeNumber}%`);
       }
 
       // Apply division filter
       if (filters.division) {
-        query = query.eq("division", filters.division);
+        paramCount++;
+        whereConditions.push(`division = $${paramCount}`);
+        queryParams.push(filters.division);
       }
 
-      // Get total count for pagination with simpler approach
-      let countQuery = supabase
-        .from("personnel")
-        .select("*", { count: 'exact', head: true });
+      const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
-      // Apply same filters to count query with smart logic
-      if (filters.firstName && filters.lastName && filters.firstName === filters.lastName) {
-        // Single name search: use OR logic to search both first and last name fields
-        const searchTerm = filters.firstName.trim();
-        countQuery = countQuery.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
-      } else {
-        // Full name search: use AND logic for separate first and last names
-        if (filters.firstName && filters.firstName.trim()) {
-          countQuery = countQuery.ilike("first_name", `%${filters.firstName}%`);
-        }
-        
-        if (filters.lastName && filters.lastName.trim()) {
-          countQuery = countQuery.ilike("last_name", `%${filters.lastName}%`);
-        }
-      }
-      
-      if (filters.badgeNumber && filters.badgeNumber.trim()) {
-        countQuery = countQuery.ilike("badge_number", `%${filters.badgeNumber}%`);
-      }
-      
-      if (filters.division) {
-        countQuery = countQuery.eq("division", filters.division);
-      }
+      // Get total count for pagination
+      const countQuery = `SELECT COUNT(*) FROM personnel ${whereClause}`;
+      const countResult = await db.queryOne(countQuery, queryParams);
+      const totalCount = parseInt(countResult.count);
 
-      const { count } = await countQuery;
-
-      // Apply sorting (server-side for database fields)
+      // Build ORDER BY clause
+      let orderByClause = '';
       if (filters.sortBy === 'name') {
-        query = query.order('last_name', { ascending: filters.sortOrder === 'asc' });
+        orderByClause = `ORDER BY last_name ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       } else if (filters.sortBy === 'regular_pay') {
-        query = query.order('regular_pay', { ascending: filters.sortOrder === 'asc' });
+        orderByClause = `ORDER BY regular_pay ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       } else if (filters.sortBy === 'overtime') {
-        query = query.order('overtime', { ascending: filters.sortOrder === 'asc' });
+        orderByClause = `ORDER BY overtime ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       } else {
         // For total compensation, we'll sort client-side since it's calculated
-        query = query.order('regular_pay', { ascending: filters.sortOrder === 'asc' });
+        orderByClause = `ORDER BY regular_pay ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       }
 
       // Apply pagination
       const startIndex = (filters.page - 1) * filters.pageSize;
-      query = query.range(startIndex, startIndex + filters.pageSize - 1);
+      const paginationClause = `LIMIT ${filters.pageSize} OFFSET ${startIndex}`;
 
-      const { data, error } = await query;
+      // Build main query
+      const mainQuery = `
+        SELECT * FROM personnel
+        ${whereClause}
+        ${orderByClause}
+        ${paginationClause}
+      `;
 
-      if (error) throw error;
-
-      const personnel = data || [];
+      const personnel = await db.queryMany(mainQuery, queryParams);
 
       // Client-side sorting for total compensation
       if (filters.sortBy === 'total_compensation') {
@@ -119,11 +110,11 @@ export const useAdvancedPersonnel = (filters: PersonnelFilters) => {
         });
       }
 
-      const totalPages = Math.ceil((count || 0) / filters.pageSize);
+      const totalPages = Math.ceil(totalCount / filters.pageSize);
 
       return {
         data: personnel,
-        totalCount: count || 0,
+        totalCount,
         totalPages,
         currentPage: filters.page,
       };
@@ -137,11 +128,7 @@ export const usePersonnelFilterOptions = () => {
   return useQuery({
     queryKey: ["personnel-filter-options"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("personnel")
-        .select("division, classification");
-
-      if (error) throw error;
+      const data = await db.queryMany("SELECT DISTINCT division, classification FROM personnel WHERE division IS NOT NULL OR classification IS NOT NULL");
 
       const divisions = [...new Set(data?.map(p => p.division).filter(Boolean))];
       const classifications = [...new Set(data?.map(p => p.classification).filter(Boolean))];

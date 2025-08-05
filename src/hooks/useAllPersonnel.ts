@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/database/client";
 import { Personnel, getTotalCompensation } from "@/types";
 
 export interface AllPersonnelFilters {
@@ -20,36 +20,37 @@ export const useAllPersonnel = (filters: AllPersonnelFilters) => {
   return useQuery({
     queryKey: ["personnel-all", filters],
     queryFn: async (): Promise<PersonnelResponse> => {
-      let query = supabase
-        .from("personnel")
-        .select("*");
-
       // Get total count for pagination
-      const { count } = await supabase
-        .from("personnel")
-        .select("*", { count: 'exact', head: true });
+      const countResult = await db.queryOne<{ count: number }>(
+        'SELECT COUNT(*) as count FROM personnel'
+      );
+      const totalCount = countResult?.count || 0;
 
-      // Apply sorting (server-side for database fields)
+      // Build the main query with sorting
+      let orderClause = '';
       if (filters.sortBy === 'name') {
-        query = query.order('last_name', { ascending: filters.sortOrder === 'asc' });
+        orderClause = `ORDER BY last_name ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       } else if (filters.sortBy === 'regular_pay') {
-        query = query.order('regular_pay', { ascending: filters.sortOrder === 'asc' });
+        orderClause = `ORDER BY regular_pay ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       } else if (filters.sortBy === 'overtime') {
-        query = query.order('overtime', { ascending: filters.sortOrder === 'asc' });
+        orderClause = `ORDER BY overtime ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       } else {
         // For total compensation, we'll sort client-side since it's calculated
-        query = query.order('regular_pay', { ascending: filters.sortOrder === 'asc' });
+        orderClause = `ORDER BY regular_pay ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
       }
 
       // Apply pagination
       const startIndex = (filters.page - 1) * filters.pageSize;
-      query = query.range(startIndex, startIndex + filters.pageSize - 1);
+      const query = `
+        SELECT * FROM personnel
+        ${orderClause}
+        LIMIT $1 OFFSET $2
+      `;
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const personnel = data || [];
+      const personnel = await db.queryMany<Personnel>(
+        query,
+        [filters.pageSize, startIndex]
+      );
 
       // Client-side sorting for total compensation
       if (filters.sortBy === 'total_compensation') {
@@ -60,11 +61,11 @@ export const useAllPersonnel = (filters: AllPersonnelFilters) => {
         });
       }
 
-      const totalPages = Math.ceil((count || 0) / filters.pageSize);
+      const totalPages = Math.ceil(totalCount / filters.pageSize);
 
       return {
         data: personnel,
-        totalCount: count || 0,
+        totalCount,
         totalPages,
         currentPage: filters.page,
       };

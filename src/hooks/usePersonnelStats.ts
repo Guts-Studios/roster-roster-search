@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/database/client";
 import { Personnel, getTotalCompensation } from "@/types";
 
 export interface StatsFilters {
@@ -13,26 +13,31 @@ export const useTopSalaries = (filters: StatsFilters) => {
   return useQuery({
     queryKey: ["personnel-stats", "top-salaries", filters],
     queryFn: async (): Promise<Personnel[]> => {
-      let query = supabase
-        .from("personnel")
-        .select("*");
-      
-      // Apply division filter
+      // Build query with filters
+      let whereClause = '';
+      const params: any[] = [];
+      let paramCount = 0;
+
       if (filters.division) {
-        query = query.eq("division", filters.division);
+        whereClause += `division = $${++paramCount}`;
+        params.push(filters.division);
       }
       
-      // Apply classification filter
       if (filters.classification) {
-        query = query.eq("classification", filters.classification);
+        if (whereClause) whereClause += ' AND ';
+        whereClause += `classification = $${++paramCount}`;
+        params.push(filters.classification);
       }
       
-      const { data, error } = await query;
-      
-      if (error) throw error;
+      const query = `
+        SELECT * FROM personnel
+        ${whereClause ? `WHERE ${whereClause}` : ''}
+      `;
+
+      const personnel = await db.queryMany<Personnel>(query, params);
       
       // Sort by selected criteria (client-side for calculated fields)
-      const sortedData = (data || []).sort((a, b) => {
+      const sortedData = personnel.sort((a, b) => {
         let aValue = 0;
         let bValue = 0;
         
@@ -67,13 +72,7 @@ export const usePersonnelAggregates = () => {
   return useQuery({
     queryKey: ["personnel-stats", "aggregates"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("personnel")
-        .select("*");
-      
-      if (error) throw error;
-      
-      const personnel = data || [];
+      const personnel = await db.queryMany<Personnel>('SELECT * FROM personnel');
       
       // Calculate aggregates
       const totalPersonnel = personnel.length;
@@ -124,14 +123,12 @@ export const useUniqueValues = () => {
   return useQuery({
     queryKey: ["personnel-stats", "unique-values"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("personnel")
-        .select("division, classification");
+      const data = await db.queryMany<{division: string | null, classification: string | null}>(
+        'SELECT DISTINCT division, classification FROM personnel'
+      );
       
-      if (error) throw error;
-      
-      const divisions = [...new Set(data?.map(p => p.division).filter(Boolean))];
-      const classifications = [...new Set(data?.map(p => p.classification).filter(Boolean))];
+      const divisions = [...new Set(data.map(p => p.division).filter(Boolean))];
+      const classifications = [...new Set(data.map(p => p.classification).filter(Boolean))];
       
       return { divisions, classifications };
     },

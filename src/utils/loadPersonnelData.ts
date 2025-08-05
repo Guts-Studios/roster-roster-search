@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/database/client";
 
 // Sample personnel data to test with (reduced set for now)
 const samplePersonnelData = [
@@ -11,11 +11,32 @@ const samplePersonnelData = [
 
 export const loadSampleData = async () => {
   try {
-    const { data, error } = await supabase
-      .from('personnel')
-      .insert(samplePersonnelData);
-    
-    if (error) throw error;
+    // Insert sample data into Railway database
+    const placeholders = samplePersonnelData.map((_, index) => {
+      const base = index * 11;
+      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10}, $${base + 11})`;
+    }).join(', ');
+
+    const values = samplePersonnelData.flatMap(person => [
+      person.last_name,
+      person.first_name,
+      person.classification,
+      person.badge_number,
+      person.division,
+      person.regular_pay,
+      person.premiums,
+      person.overtime,
+      person.payout || null,
+      person.health_dental_vision
+    ]);
+
+    const query = `
+      INSERT INTO personnel (last_name, first_name, classification, badge_number, division, regular_pay, premiums, overtime, payout, health_dental_vision)
+      VALUES ${placeholders}
+      RETURNING *
+    `;
+
+    const data = await db.queryMany(query, values);
     return { success: true, data };
   } catch (error) {
     console.error('Error loading sample data:', error);
@@ -24,9 +45,10 @@ export const loadSampleData = async () => {
 };
 
 export const checkDataCount = async () => {
-  const { count, error } = await supabase
-    .from('personnel')
-    .select('*', { count: 'exact', head: true });
-  
-  return { count, error };
+  try {
+    const result = await db.queryOne<{ count: number }>('SELECT COUNT(*) as count FROM personnel');
+    return { count: result?.count || 0, error: null };
+  } catch (error) {
+    return { count: 0, error };
+  }
 };

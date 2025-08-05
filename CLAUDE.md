@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a React application for searching and displaying public personnel records. It's a police accountability tool built with Vite, TypeScript, React, shadcn-ui, and Tailwind CSS, with a Supabase backend.
+This is a React application for searching and displaying public personnel records. It's a police accountability tool built with Vite, TypeScript, React, shadcn-ui, and Tailwind CSS, with a Railway PostgreSQL backend.
 
 ## Development Commands
 
@@ -16,11 +16,11 @@ This is a React application for searching and displaying public personnel record
 
 ## Database and Migration Commands
 
-- `npm run generate-migration` - Generate new Supabase migration
-- `npm run insert-personnel` - Insert personnel data into database
+- `npm run generate-migration` - Generate new database migration
+- `npm run insert-personnel` - Insert personnel data into Railway database
 - `npm run run-migration` - Run migration directly
 - `npm run generate-sql` - Generate SQL insert statements
-- `npm run db:push` - Push database changes to Supabase
+- `npm run db:push` - Push database changes to Railway
 
 ## Architecture
 
@@ -31,21 +31,22 @@ This is a React application for searching and displaying public personnel record
 - **Types**: `/src/types/index.ts` - TypeScript interfaces, primarily Personnel interface
 
 ### Data Layer
-- **Supabase Integration**: `/src/integrations/supabase/` - Database client and type definitions
+- **Railway PostgreSQL Integration**: `/src/integrations/database/` - PostgreSQL client and type definitions
 - **React Query**: Used for data fetching, caching, and state management
 - **Personnel Hook**: `usePersonnel`, `usePersonnelById`, `usePersonnelSearch` for data operations
 - **Advanced Personnel Hook**: `useAdvancedPersonnel` for filtered and paginated results
 
 ### Key Data Flow
 1. Search page uses `useAdvancedPersonnel` hook with filters for pagination and search
-2. Personnel data fetched from Supabase `personnel` table
+2. Personnel data fetched from Railway PostgreSQL `personnel` table using raw SQL queries
 3. Search supports name and badge number queries with intelligent detection (numeric = badge, text = name)
 4. Results displayed with pagination using `RosterList` and `Pagination` components
 
 ### Database Schema
 - Primary table: `personnel` with fields for names, badge numbers, pay information, divisions
-- App configuration stored in `app_config` table with RLS policies
-- Personnel photos stored in `/public/data/` directory with filename conventions
+- App configuration stored in `app_config` table with secure access patterns
+- Personnel photos stored in `/public/photos/` directory with filename conventions
+- PostgreSQL database with connection pooling and optimized queries
 
 ### Component Architecture
 - Uses shadcn-ui component library with Radix UI primitives
@@ -63,4 +64,4 @@ This is a React application for searching and displaying public personnel record
 - Vite build system with SWC for fast compilation
 - Development server runs on port 8080
 - Platform integration for deployment
-- Environment variables for Supabase connection
+- Environment variables for Railway PostgreSQL connection (`VITE_DATABASE_URL`)

@@ -1,6 +1,6 @@
-import { supabase } from '@/integrations/supabase/client';
+import { db } from '@/integrations/database/client';
 
-// Secure password verification using Supabase and hashing
+// Secure password verification using Railway PostgreSQL and hashing
 
 // Hash function using Web Crypto API
 const hashPassword = async (password: string, salt: string): Promise<string> => {
@@ -11,22 +11,16 @@ const hashPassword = async (password: string, salt: string): Promise<string> => 
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
-// Function to verify password against stored hash in Supabase
+// Function to verify password against stored hash in Railway database
 export const verifyPassword = async (inputPassword: string): Promise<boolean> => {
   try {
-    // Get the stored hash from Supabase
-    const { data, error } = await supabase
-      .from('app_config')
-      .select('value')
-      .eq('key', 'search_password_hash')
-      .single();
+    // Get the stored hash from Railway database
+    const result = await db.queryOne(
+      'SELECT value FROM app_config WHERE key = $1',
+      ['search_password_hash']
+    );
 
-    if (error) {
-      console.error('Error fetching password hash:', error);
-      return false;
-    }
-
-    if (!data) {
+    if (!result) {
       console.error('No password hash found in database');
       return false;
     }
@@ -36,7 +30,7 @@ export const verifyPassword = async (inputPassword: string): Promise<boolean> =>
     const inputHash = await hashPassword(inputPassword, salt);
     
     // Compare hashes
-    return inputHash === data.value;
+    return inputHash === result.value;
   } catch (error) {
     console.error('Error verifying password:', error);
     return false;
@@ -49,23 +43,18 @@ export const generatePasswordHash = async (password: string): Promise<string> =>
   return await hashPassword(password, salt);
 };
 
-// Function to update the password hash in Supabase (admin use only)
+// Function to update the password hash in Railway database (admin use only)
 export const updatePasswordHash = async (newPassword: string): Promise<boolean> => {
   try {
     const hashedPassword = await generatePasswordHash(newPassword);
     
-    const { error } = await supabase
-      .from('app_config')
-      .upsert({
-        key: 'search_password_hash',
-        value: hashedPassword,
-        description: 'Hashed password for search access'
-      });
-
-    if (error) {
-      console.error('Error updating password hash:', error);
-      return false;
-    }
+    await db.query(
+      `INSERT INTO app_config (key, value, description)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (key)
+       DO UPDATE SET value = $2, description = $3, updated_at = NOW()`,
+      ['search_password_hash', hashedPassword, 'Hashed password for search access']
+    );
 
     return true;
   } catch (error) {

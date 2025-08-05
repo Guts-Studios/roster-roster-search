@@ -1,0 +1,10 @@
+[
+  {
+    "id": "fb3f43ad-088a-4624-958e-1837390dabec",
+    "key": "search_password_hash",
+    "value": "c8a5d7f2b9e1c4a6d8f0b3e5a7c9d1f4e6a8b0c2d4f6e8a0b2c4d6e8f0a2b4c6d8",
+    "description": "Hashed password for search access",
+    "created_at": "2025-07-30T04:30:22.000049+00:00",
+    "updated_at": "2025-07-30T04:36:08.338116+00:00"
+  }
+]

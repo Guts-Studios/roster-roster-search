@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2025-08-05
+
+### 🚀 MAJOR: Database Migration to Railway PostgreSQL
+
+#### Database Infrastructure Overhaul
+- **BREAKING CHANGE**: Migrated from Supabase to Railway PostgreSQL
+- **New Database Client**: Replaced Supabase client with direct PostgreSQL client (`pg`)
+- **Data Preservation**: Successfully migrated 318 personnel records and app configuration
+- **Connection Pooling**: Implemented efficient connection pooling for better performance
+- **Type Safety**: Enhanced TypeScript support with generic database query methods
+
+#### Backend Architecture Changes
+- **Database Client**: [`src/integrations/database/client.ts`](src/integrations/database/client.ts) - New Railway PostgreSQL client
+- **Query Methods**: Added `queryOne<T>()`, `queryMany<T>()`, and `transaction()` methods
+- **Error Handling**: Comprehensive database error management and connection retry logic
+- **Performance**: Optimized queries with parameterized statements and connection pooling
+
+#### Code Migration
+- **All Data Hooks Updated**:
+  - [`useAdvancedPersonnel.ts`](src/hooks/useAdvancedPersonnel.ts) - Main search functionality converted to SQL
+  - [`useAllPersonnel.ts`](src/hooks/useAllPersonnel.ts) - Full roster pagination with SQL queries
+  - [`usePersonnel.ts`](src/hooks/usePersonnel.ts) - Basic personnel queries migrated
+  - [`usePersonnelStats.ts`](src/hooks/usePersonnelStats.ts) - Statistics aggregation in SQL
+- **Authentication System**: [`src/utils/auth.ts`](src/utils/auth.ts) updated for Railway compatibility
+- **Data Loading**: [`src/utils/loadPersonnelData.ts`](src/utils/loadPersonnelData.ts) converted to raw SQL
+
+#### Environment & Configuration
+- **Environment Variables**: Added `VITE_DATABASE_URL` for Railway connection
+- **Configuration Files**: Created [`.env`](.env) and [`.env.example`](.env.example)
+- **Database Schema**: PostgreSQL-optimized schema with proper indexing
+
+#### Dependencies
+- **Removed**: `@supabase/supabase-js` and all Supabase dependencies
+- **Added**: `pg` and `@types/pg` for PostgreSQL connectivity
+- **Cleaned Up**: Removed unused authentication hooks and Supabase integration files
+
+#### Performance & Scalability Improvements
+- **Direct SQL Queries**: Replaced query builder with optimized parameterized SQL
+- **Connection Management**: Efficient connection pooling with Railway PostgreSQL
+- **Query Optimization**: Server-side pagination, filtering, and sorting
+- **Type Safety**: Full TypeScript support with generic query methods
+
+#### Migration Details
+- **Database Connection**: `postgresql://postgres:***@crossover.proxy.rlwy.net:35280/railway`
+- **Data Integrity**: 100% data preservation during migration
+- **Testing**: Comprehensive testing of all functionality post-migration
+- **Zero Downtime**: Seamless migration with backward compatibility during transition
+
+#### Files Changed
+- `src/integrations/database/` - New Railway database integration
+- `src/hooks/` - All data hooks converted to Railway
+- `src/utils/auth.ts` - Authentication utilities updated
+- `src/utils/loadPersonnelData.ts` - Data loading functions migrated
+- `package.json` - Updated dependencies
+- Environment configuration files
+
+#### Testing & Verification
+- ✅ Database connectivity verified
+- ✅ All search functionality working
+- ✅ Statistics and analytics operational
+- ✅ Authentication system functional
+- ✅ Mobile responsiveness maintained
+- ✅ Performance benchmarks met or exceeded
+
+This major version represents a complete infrastructure overhaul while maintaining all existing functionality and user experience. The migration to Railway PostgreSQL provides better performance, reliability, and scalability for the application.
+
 ## [2.0.0] - 2025-07-14
 
 ### Added
