@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/integrations/database/client";
+import { api } from "@/integrations/api/client";
 import { Personnel, getTotalCompensation } from "@/types";
 
 export interface AllPersonnelFilters {
@@ -20,55 +20,26 @@ export const useAllPersonnel = (filters: AllPersonnelFilters) => {
   return useQuery({
     queryKey: ["personnel-all", filters],
     queryFn: async (): Promise<PersonnelResponse> => {
-      // Get total count for pagination
-      const countResult = await db.queryOne<{ count: number }>(
-        'SELECT COUNT(*) as count FROM personnel'
-      );
-      const totalCount = countResult?.count || 0;
+      // Call the backend API instead of direct DB access
+      const requestData = {
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        page: filters.page,
+        pageSize: filters.pageSize
+      };
 
-      // Build the main query with sorting
-      let orderClause = '';
-      if (filters.sortBy === 'name') {
-        orderClause = `ORDER BY last_name ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
-      } else if (filters.sortBy === 'regular_pay') {
-        orderClause = `ORDER BY regular_pay ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
-      } else if (filters.sortBy === 'overtime') {
-        orderClause = `ORDER BY overtime ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
-      } else {
-        // For total compensation, we'll sort client-side since it's calculated
-        orderClause = `ORDER BY regular_pay ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
-      }
+      const result = await api.post('/personnel/all', requestData);
 
-      // Apply pagination
-      const startIndex = (filters.page - 1) * filters.pageSize;
-      const query = `
-        SELECT * FROM personnel
-        ${orderClause}
-        LIMIT $1 OFFSET $2
-      `;
-
-      const personnel = await db.queryMany<Personnel>(
-        query,
-        [filters.pageSize, startIndex]
-      );
-
-      // Client-side sorting for total compensation
+      // Client-side sorting for total compensation (if backend doesn't handle it)
       if (filters.sortBy === 'total_compensation') {
-        personnel.sort((a, b) => {
+        result.data.sort((a: Personnel, b: Personnel) => {
           const aTotal = getTotalCompensation(a);
           const bTotal = getTotalCompensation(b);
           return filters.sortOrder === 'asc' ? aTotal - bTotal : bTotal - aTotal;
         });
       }
 
-      const totalPages = Math.ceil(totalCount / filters.pageSize);
-
-      return {
-        data: personnel,
-        totalCount,
-        totalPages,
-        currentPage: filters.page,
-      };
+      return result;
     },
   });
 };

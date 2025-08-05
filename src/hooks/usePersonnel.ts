@@ -1,15 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/integrations/database/client";
+import { api } from "@/integrations/api/client";
 import { Personnel } from "@/types";
 
 export const usePersonnel = () => {
   return useQuery({
     queryKey: ["personnel"],
     queryFn: async (): Promise<Personnel[]> => {
-      const personnel = await db.queryMany<Personnel>(
-        'SELECT * FROM personnel ORDER BY last_name ASC'
-      );
-      return personnel;
+      return await api.queryMany<Personnel>('/personnel');
     },
   });
 };
@@ -20,12 +17,12 @@ export const usePersonnelById = (id: string) => {
     queryFn: async (): Promise<Personnel | null> => {
       if (!id) return null;
       
-      const person = await db.queryOne<Personnel>(
-        'SELECT * FROM personnel WHERE id = $1',
-        [id]
-      );
-
-      return person || null;
+      try {
+        return await api.queryOne<Personnel>(`/personnel/${id}`);
+      } catch (error) {
+        // Handle 404 or other errors
+        return null;
+      }
     },
     enabled: !!id,
   });
@@ -35,24 +32,7 @@ export const usePersonnelSearch = (searchTerm: string) => {
   return useQuery({
     queryKey: ["personnel", "search", searchTerm],
     queryFn: async (): Promise<Personnel[]> => {
-      if (!searchTerm.trim()) {
-        const personnel = await db.queryMany<Personnel>(
-          'SELECT * FROM personnel ORDER BY last_name ASC'
-        );
-        return personnel;
-      }
-
-      const searchPattern = `%${searchTerm}%`;
-      const personnel = await db.queryMany<Personnel>(
-        `SELECT * FROM personnel
-         WHERE last_name ILIKE $1
-            OR first_name ILIKE $1
-            OR badge_number ILIKE $1
-         ORDER BY last_name ASC`,
-        [searchPattern]
-      );
-
-      return personnel;
+      return await api.post('/personnel/search-simple', { searchTerm });
     },
   });
 };

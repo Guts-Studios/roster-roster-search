@@ -16,8 +16,16 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      external: (id) => {
+        // Ensure Node.js modules are not bundled in the frontend
+        return id === 'pg' || id === 'fs' || id === 'path' || id === 'crypto' || id.startsWith('node:');
+      }
+    }
+  },
   define: {
-    // Ensure environment variables are available at build time
-    'import.meta.env.VITE_DATABASE_URL': JSON.stringify(process.env.VITE_DATABASE_URL),
+    // Remove database URL from frontend build
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
   },
 }));

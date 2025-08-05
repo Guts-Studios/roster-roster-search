@@ -1,4 +1,7 @@
-import { db } from "@/integrations/database/client";
+// NOTE: This utility file is disabled to prevent frontend database imports
+// All database operations should be handled through the backend API
+
+// import { api } from "@/integrations/api/client";
 
 // Sample personnel data to test with (reduced set for now)
 const samplePersonnelData = [
@@ -9,35 +12,15 @@ const samplePersonnelData = [
   { last_name: 'Esquivel', first_name: 'Saul', classification: 'Police Officer', badge_number: '3295', division: 'Traffic', regular_pay: 120942.53, premiums: 43390.44, overtime: 89729.33, health_dental_vision: 18108.00 }
 ];
 
+// These functions are commented out to prevent database imports in frontend
+// If you need to load sample data, use the backend scripts instead
+
+/*
 export const loadSampleData = async () => {
   try {
-    // Insert sample data into Railway database
-    const placeholders = samplePersonnelData.map((_, index) => {
-      const base = index * 11;
-      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10}, $${base + 11})`;
-    }).join(', ');
-
-    const values = samplePersonnelData.flatMap(person => [
-      person.last_name,
-      person.first_name,
-      person.classification,
-      person.badge_number,
-      person.division,
-      person.regular_pay,
-      person.premiums,
-      person.overtime,
-      person.payout || null,
-      person.health_dental_vision
-    ]);
-
-    const query = `
-      INSERT INTO personnel (last_name, first_name, classification, badge_number, division, regular_pay, premiums, overtime, payout, health_dental_vision)
-      VALUES ${placeholders}
-      RETURNING *
-    `;
-
-    const data = await db.queryMany(query, values);
-    return { success: true, data };
+    // This would need to be implemented as a backend API endpoint
+    console.warn('loadSampleData is disabled - use backend scripts for data loading');
+    return { success: false, error: 'Function disabled for frontend/backend separation' };
   } catch (error) {
     console.error('Error loading sample data:', error);
     return { success: false, error };
@@ -46,9 +29,11 @@ export const loadSampleData = async () => {
 
 export const checkDataCount = async () => {
   try {
-    const result = await db.queryOne<{ count: number }>('SELECT COUNT(*) as count FROM personnel');
-    return { count: result?.count || 0, error: null };
+    // This would need to be implemented as a backend API endpoint
+    console.warn('checkDataCount is disabled - use backend scripts for data checking');
+    return { count: 0, error: 'Function disabled for frontend/backend separation' };
   } catch (error) {
     return { count: 0, error };
   }
 };
+*/

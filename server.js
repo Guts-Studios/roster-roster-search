@@ -160,6 +160,45 @@ app.get('/api/personnel-filter-options', async (req, res) => {
   }
 });
 
+// Authentication endpoint
+app.post('/api/auth/verify', async (req, res) => {
+  try {
+    const { password } = req.body;
+    
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    // Hash function using built-in crypto
+    const hashPassword = async (password, salt) => {
+      const crypto = await import('crypto');
+      return crypto.createHash('sha256').update(password + salt).digest('hex');
+    };
+
+    // Get the stored hash from database
+    const result = await pool.query(
+      'SELECT value FROM app_config WHERE key = $1',
+      ['search_password_hash']
+    );
+
+    if (!result.rows[0]) {
+      return res.status(500).json({ error: 'Authentication configuration not found' });
+    }
+
+    // Hash the input password with the same salt
+    const salt = 'watch_the_watchers_salt_2024';
+    const inputHash = await hashPassword(password, salt);
+    
+    // Compare hashes
+    const isValid = inputHash === result.rows[0].value;
+    
+    res.json({ valid: isValid });
+  } catch (error) {
+    console.error('Error verifying password:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/personnel/all', async (req, res) => {
   try {
     const { sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
@@ -200,6 +239,96 @@ app.post('/api/personnel/all', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching all personnel:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get single personnel by ID
+app.get('/api/personnel/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Personnel not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching personnel by id:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Search personnel with simple search term
+app.post('/api/personnel/search-simple', async (req, res) => {
+  try {
+    const { searchTerm } = req.body;
+    
+    if (!searchTerm?.trim()) {
+      const result = await pool.query('SELECT * FROM personnel ORDER BY last_name ASC');
+      return res.json(result.rows);
+    }
+
+    const searchPattern = `%${searchTerm}%`;
+    const result = await pool.query(
+      `SELECT * FROM personnel
+       WHERE last_name ILIKE $1
+          OR first_name ILIKE $1
+          OR badge_number ILIKE $1
+       ORDER BY last_name ASC`,
+      [searchPattern]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error searching personnel:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get statistics and aggregates
+app.post('/api/personnel/stats', async (req, res) => {
+  try {
+    const { type, filters = {} } = req.body;
+    
+    if (type === 'top-salaries') {
+      const { limit = 50, division, classification, sortBy = 'total_compensation' } = filters;
+      
+      let whereClause = '';
+      const params = [];
+      let paramCount = 0;
+
+      if (division) {
+        whereClause += `division = $${++paramCount}`;
+        params.push(division);
+      }
+      
+      if (classification) {
+        if (whereClause) whereClause += ' AND ';
+        whereClause += `classification = $${++paramCount}`;
+        params.push(classification);
+      }
+      
+      const query = `
+        SELECT * FROM personnel
+        ${whereClause ? `WHERE ${whereClause}` : ''}
+      `;
+
+      const result = await pool.query(query, params);
+      res.json(result.rows);
+      
+    } else if (type === 'aggregates') {
+      const result = await pool.query('SELECT * FROM personnel');
+      res.json(result.rows);
+      
+    } else if (type === 'unique-values') {
+      const result = await pool.query('SELECT DISTINCT division, classification FROM personnel');
+      res.json(result.rows);
+      
+    } else {
+      res.status(400).json({ error: 'Invalid stats type' });
+    }
+  } catch (error) {
+    console.error('Error fetching stats:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

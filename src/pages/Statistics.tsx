@@ -11,7 +11,7 @@ import { useTopSalaries, usePersonnelAggregates, useUniqueValues, StatsFilters }
 import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
 import { getFullName, getTotalCompensation } from "../types";
 import { useToast } from "@/hooks/use-toast";
-import { loadSampleData, checkDataCount } from "@/utils/loadPersonnelData";
+// Removed loadSampleData, checkDataCount imports - functions disabled for frontend/backend separation
 import RosterList from "../components/RosterList";
 import Pagination from "../components/Pagination";
 
@@ -167,41 +167,21 @@ const Statistics = () => {
     }
   };
 
+  // These functions are disabled for frontend/backend separation
   const handleLoadSampleData = async () => {
-    try {
-      const result = await loadSampleData();
-      if (result.success) {
-        await handleRefresh();
-        toast({
-          title: "Sample Data Loaded",
-          description: "Sample public records data has been loaded successfully.",
-        });
-      } else {
-        throw result.error;
-      }
-    } catch (error) {
-      toast({
-        title: "Load Failed",
-        description: "Failed to load sample data. Please try again.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Function Disabled",
+      description: "Sample data loading is disabled. Use backend scripts for data operations.",
+      variant: "destructive",
+    });
   };
 
   const handleCheckData = async () => {
-    try {
-      const result = await checkDataCount();
-      toast({
-        title: "Data Count Check",
-        description: `Current public records: ${result.count || 0}`,
-      });
-    } catch (error) {
-      toast({
-        title: "Check Failed",
-        description: "Failed to check data count.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Function Disabled",
+      description: "Data count checking is disabled. Use backend scripts for data operations.",
+      variant: "destructive",
+    });
   };
 
   // Main statistics interface

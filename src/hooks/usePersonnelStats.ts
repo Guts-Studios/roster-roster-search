@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/integrations/database/client";
+import { api } from "@/integrations/api/client";
 import { Personnel, getTotalCompensation } from "@/types";
 
 export interface StatsFilters {
@@ -13,31 +13,13 @@ export const useTopSalaries = (filters: StatsFilters) => {
   return useQuery({
     queryKey: ["personnel-stats", "top-salaries", filters],
     queryFn: async (): Promise<Personnel[]> => {
-      // Build query with filters
-      let whereClause = '';
-      const params: any[] = [];
-      let paramCount = 0;
-
-      if (filters.division) {
-        whereClause += `division = $${++paramCount}`;
-        params.push(filters.division);
-      }
-      
-      if (filters.classification) {
-        if (whereClause) whereClause += ' AND ';
-        whereClause += `classification = $${++paramCount}`;
-        params.push(filters.classification);
-      }
-      
-      const query = `
-        SELECT * FROM personnel
-        ${whereClause ? `WHERE ${whereClause}` : ''}
-      `;
-
-      const personnel = await db.queryMany<Personnel>(query, params);
+      const personnel = await api.post('/personnel/stats', {
+        type: 'top-salaries',
+        filters
+      });
       
       // Sort by selected criteria (client-side for calculated fields)
-      const sortedData = personnel.sort((a, b) => {
+      const sortedData = personnel.sort((a: Personnel, b: Personnel) => {
         let aValue = 0;
         let bValue = 0;
         
@@ -72,19 +54,21 @@ export const usePersonnelAggregates = () => {
   return useQuery({
     queryKey: ["personnel-stats", "aggregates"],
     queryFn: async () => {
-      const personnel = await db.queryMany<Personnel>('SELECT * FROM personnel');
+      const personnel = await api.post('/personnel/stats', {
+        type: 'aggregates'
+      });
       
-      // Calculate aggregates
+      // Calculate aggregates client-side
       const totalPersonnel = personnel.length;
-      const totalCompensation = personnel.reduce((sum, p) => sum + getTotalCompensation(p), 0);
+      const totalCompensation = personnel.reduce((sum: number, p: Personnel) => sum + getTotalCompensation(p), 0);
       const avgCompensation = totalPersonnel > 0 ? totalCompensation / totalPersonnel : 0;
       
-      const totalRegularPay = personnel.reduce((sum, p) => sum + (p.regular_pay || 0), 0);
-      const totalOvertime = personnel.reduce((sum, p) => sum + (p.overtime || 0), 0);
-      const totalPremiums = personnel.reduce((sum, p) => sum + (p.premiums || 0), 0);
+      const totalRegularPay = personnel.reduce((sum: number, p: Personnel) => sum + (p.regular_pay || 0), 0);
+      const totalOvertime = personnel.reduce((sum: number, p: Personnel) => sum + (p.overtime || 0), 0);
+      const totalPremiums = personnel.reduce((sum: number, p: Personnel) => sum + (p.premiums || 0), 0);
       
       // Division breakdown
-      const divisionBreakdown = personnel.reduce((acc, p) => {
+      const divisionBreakdown = personnel.reduce((acc: any, p: Personnel) => {
         const division = p.division || 'Unknown';
         if (!acc[division]) {
           acc[division] = { count: 0, totalCompensation: 0 };
@@ -95,7 +79,7 @@ export const usePersonnelAggregates = () => {
       }, {} as Record<string, { count: number; totalCompensation: number }>);
       
       // Classification breakdown
-      const classificationBreakdown = personnel.reduce((acc, p) => {
+      const classificationBreakdown = personnel.reduce((acc: any, p: Personnel) => {
         const classification = p.classification || 'Unknown';
         if (!acc[classification]) {
           acc[classification] = { count: 0, totalCompensation: 0 };
@@ -123,12 +107,12 @@ export const useUniqueValues = () => {
   return useQuery({
     queryKey: ["personnel-stats", "unique-values"],
     queryFn: async () => {
-      const data = await db.queryMany<{division: string | null, classification: string | null}>(
-        'SELECT DISTINCT division, classification FROM personnel'
-      );
+      const data = await api.post('/personnel/stats', {
+        type: 'unique-values'
+      });
       
-      const divisions = [...new Set(data.map(p => p.division).filter(Boolean))];
-      const classifications = [...new Set(data.map(p => p.classification).filter(Boolean))];
+      const divisions = [...new Set(data.map((p: any) => p.division).filter(Boolean))];
+      const classifications = [...new Set(data.map((p: any) => p.classification).filter(Boolean))];
       
       return { divisions, classifications };
     },
