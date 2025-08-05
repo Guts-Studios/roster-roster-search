@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Shield } from "lucide-react";
 import { getPhotoUrlVariations } from "@/utils/photoUtils";
+import { useRosterUrlState } from "../hooks/useUrlState";
 
 interface ProfileCardProps {
   person: Personnel;
@@ -17,6 +18,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const { createProfileLink } = useRosterUrlState();
   
   // Check for working photo URL by trying multiple variations
   useEffect(() => {
@@ -59,7 +61,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
     : undefined;
 
   return (
-    <Link to={`/profile/${person.id}`}>
+    <Link to={createProfileLink(person.id)}>
       <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
         <CardHeader className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 pb-2 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
           <div className="relative h-[4.5rem] w-16 sm:h-[5.5rem] sm:w-20 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">

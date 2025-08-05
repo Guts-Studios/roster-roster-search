@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePersonnelById } from "../hooks/usePersonnel";
 import { getFullName, getTotalCompensation } from "../types";
@@ -8,12 +8,15 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield, DollarSign, X, ZoomIn } from "lucide-react";
-import { getPhotoUrl } from "@/utils/photoUtils";
+import { getPhotoUrlVariations } from "@/utils/photoUtils";
+import { useRosterUrlState } from "../hooks/useUrlState";
 
 const ProfileDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { data: person, isLoading, error } = usePersonnelById(id || "");
   const [isImageZoomed, setIsImageZoomed] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const { getReturnPath } = useRosterUrlState();
 
   if (isLoading) {
     return (
@@ -29,9 +32,9 @@ const ProfileDetails = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
           <p className="text-muted-foreground mb-6">You need to be authenticated to view public records.</p>
-          <Link to="/roster">
+          <Link to={getReturnPath()}>
             <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
-              <ArrowLeft size={16} /> Return to Roster
+              <ArrowLeft size={16} /> Return to Results
             </Button>
           </Link>
         </div>
@@ -45,9 +48,9 @@ const ProfileDetails = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Profile Not Found</h1>
           <p className="text-muted-foreground mb-6">The requested profile could not be found.</p>
-          <Link to="/roster">
+          <Link to={getReturnPath()}>
             <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
-              <ArrowLeft size={16} /> Return to Roster
+              <ArrowLeft size={16} /> Return to Results
             </Button>
           </Link>
         </div>
@@ -58,7 +61,43 @@ const ProfileDetails = () => {
   const fullName = getFullName(person);
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
-  const photoUrl = getPhotoUrl(person);
+  
+  // Check for working photo URL by trying multiple variations (same logic as ProfileCard)
+  useEffect(() => {
+    if (!person) return;
+    
+    const findWorkingPhotoUrl = async () => {
+      const potentialUrls = getPhotoUrlVariations(person);
+      if (potentialUrls.length === 0) {
+        setPhotoUrl(null);
+        return;
+      }
+      
+      // Try each URL variation until we find one that works
+      for (const url of potentialUrls) {
+        try {
+          const success = await new Promise<boolean>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+          });
+          
+          if (success) {
+            setPhotoUrl(url);
+            return;
+          }
+        } catch {
+          continue;
+        }
+      }
+      
+      // If no variation worked, set to null
+      setPhotoUrl(null);
+    };
+    
+    findWorkingPhotoUrl();
+  }, [person]);
   
   // Format compensation with commas and dollar sign (consistent with other pay fields)
   const formattedCompensation = totalCompensation > 0
@@ -68,9 +107,9 @@ const ProfileDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/roster" className="inline-flex items-center text-black hover:text-foreground mb-6">
+        <Link to={getReturnPath()} className="inline-flex items-center text-black hover:text-foreground mb-6">
           <Button variant="outline" className="border-black text-black hover:bg-black/10 text-lg px-6 py-3">
-            <ArrowLeft size={20} className="mr-2" /> Back to Roster
+            <ArrowLeft size={20} className="mr-2" /> Back to Results
           </Button>
         </Link>
         

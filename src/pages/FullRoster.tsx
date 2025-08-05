@@ -1,20 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RosterList from "../components/RosterList";
 import Pagination from "../components/Pagination";
 import { useAllPersonnel, AllPersonnelFilters } from "../hooks/useAllPersonnel";
+import { useRosterUrlState } from "../hooks/useUrlState";
 
 const FullRoster = () => {
+  const { getRosterState, setRosterState } = useRosterUrlState();
+  
+  // Initialize filters from URL state
+  const urlState = getRosterState();
   const [filters, setFilters] = useState<AllPersonnelFilters>({
-    sortBy: 'name',
-    sortOrder: 'asc',
-    page: 1,
-    pageSize: 25,
+    sortBy: urlState.sortBy,
+    sortOrder: urlState.sortOrder,
+    page: urlState.page,
+    pageSize: urlState.pageSize,
   });
+  
+  // Set source to 'roster' to distinguish from search page
+  useEffect(() => {
+    setRosterState({ source: 'roster' });
+  }, [setRosterState]);
 
   const { data: personnelResponse, isLoading, error } = useAllPersonnel(filters);
 
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page }));
+    // Update URL state
+    setRosterState({ page });
   };
 
   // Handle API errors

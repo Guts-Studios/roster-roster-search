@@ -43,6 +43,19 @@ function generatePhotoVariations(person: Personnel): string[] {
     { pattern: /\s+(iv|4th)$/i, replacement: 'iv' },
   ];
   
+  // Handle common nickname patterns
+  const nicknameMap = {
+    'daniel': ['dan'],
+    'daniel ': ['dan'],
+    'robert': ['rob', 'bob'],
+    'william': ['bill', 'will'],
+    'richard': ['rick', 'dick'],
+    'michael': ['mike'],
+    'christopher': ['chris'],
+    'matthew': ['matt'],
+    'anthony': ['tony']
+  };
+  
   // Check if lastName has a suffix and create variations
   let baseLastName = lastName;
   let suffixVariation = '';
@@ -61,6 +74,44 @@ function generatePhotoVariations(person: Personnel): string[] {
   const formattedFirstName = formatName(firstName);
   const formattedBaseLastName = formatName(baseLastName);
   
+  // Handle compound names - Generate additional variations
+  const generateCompoundNameVariations = (first: string, last: string, badge: string, ext: string) => {
+    const compoundVariations: string[] = [];
+    
+    // Handle compound last names (e.g., "Garcia Beltran" -> use last part "beltran")
+    if (last.includes('_')) {
+      const lastParts = last.split('_');
+      // Try using just the last part of compound surname
+      compoundVariations.push(`/photos/${lastParts[lastParts.length - 1]}_${first}_${badge}${ext}`);
+      
+      // Try using first part of compound surname
+      compoundVariations.push(`/photos/${lastParts[0]}_${first}_${badge}${ext}`);
+    }
+    
+    // Handle compound first names (e.g., "An Cao" in "An Cao Ngo")
+    if (first.includes('_')) {
+      const firstParts = first.split('_');
+      // Try using just first part of compound first name
+      compoundVariations.push(`/photos/${last}_${firstParts[0]}_${badge}${ext}`);
+      
+      // Try rearranging compound first names (for Asian names)
+      if (firstParts.length === 2) {
+        compoundVariations.push(`/photos/${last}_${firstParts[1]}_${firstParts[0]}_${badge}${ext}`);
+      }
+    }
+    
+    // Handle "De" in names (e.g., "Ponce De Leon" -> "ponce_de_leon")
+    if (last.includes('de_')) {
+      const deParts = last.split('de_');
+      if (deParts.length === 2) {
+        compoundVariations.push(`/photos/${deParts[0]}_de_${deParts[1]}_${first}_${badge}${ext}`);
+        compoundVariations.push(`/photos/${deParts[0]}_${deParts[1]}_${first}_${badge}${ext}`);
+      }
+    }
+    
+    return compoundVariations;
+  };
+  
   // Generate variations with badge number for both .webp and .webpX extensions
   if (person.badge_number) {
     const extensions = ['.webp', '.webpX'];
@@ -73,23 +124,52 @@ function generatePhotoVariations(person: Personnel): string[] {
     
     for (const ext of extensions) {
       for (const badge of badgeVariations) {
-        // Variation 1: suffix concatenated directly (like espinozaii_roberto_3770.webp)
-        if (suffixVariation && !suffixVariation.startsWith('-')) {
-          variations.push(`/photos/${formattedBaseLastName}${suffixVariation}_${formattedFirstName}_${badge}${ext}`);
+        // Generate nickname variations for first name
+        const firstNameVariations = [formattedFirstName];
+        const lowerFirstName = firstName.toLowerCase();
+        if (nicknameMap[lowerFirstName]) {
+          firstNameVariations.push(...nicknameMap[lowerFirstName]);
         }
         
-        // Variation 2: suffix with hyphen (like rodardte-jr_gerardo_3737.webp)
-        if (suffixVariation && suffixVariation.startsWith('-')) {
-          variations.push(`/photos/${formattedBaseLastName}${suffixVariation}_${formattedFirstName}_${badge}${ext}`);
-        }
-        
-        // Variation 3: original format without suffix handling
-        const formattedLastName = formatName(lastName);
-        variations.push(`/photos/${formattedLastName}_${formattedFirstName}_${badge}${ext}`);
-        
-        // Variation 4: base name without suffix
-        if (suffixVariation) {
-          variations.push(`/photos/${formattedBaseLastName}_${formattedFirstName}_${badge}${ext}`);
+        for (const firstNameVar of firstNameVariations) {
+          // Variation 1: suffix concatenated directly (like espinozaii_roberto_3770.webp)
+          if (suffixVariation && !suffixVariation.startsWith('-')) {
+            variations.push(`/photos/${formattedBaseLastName}${suffixVariation}_${firstNameVar}_${badge}${ext}`);
+          }
+          
+          // Variation 2: suffix with hyphen (like rodardte-jr_gerardo_3737.webp)
+          if (suffixVariation && suffixVariation.startsWith('-')) {
+            variations.push(`/photos/${formattedBaseLastName}${suffixVariation}_${firstNameVar}_${badge}${ext}`);
+          }
+          
+          // Variation 2b: suffix concatenated as "jr" without hyphen (like castrojr_jorge_3942.webp)
+          if (suffixVariation === '-jr') {
+            variations.push(`/photos/${formattedBaseLastName}jr_${firstNameVar}_${badge}${ext}`);
+          }
+          if (suffixVariation === '-sr') {
+            variations.push(`/photos/${formattedBaseLastName}sr_${firstNameVar}_${badge}${ext}`);
+          }
+          
+          // Variation 2c: suffix with underscore (like rodarte_jr_gerardo_3737.webp)
+          if (suffixVariation === '-jr') {
+            variations.push(`/photos/${formattedBaseLastName}_jr_${firstNameVar}_${badge}${ext}`);
+          }
+          if (suffixVariation === '-sr') {
+            variations.push(`/photos/${formattedBaseLastName}_sr_${firstNameVar}_${badge}${ext}`);
+          }
+          
+          // Variation 3: original format without suffix handling
+          const formattedLastName = formatName(lastName);
+          variations.push(`/photos/${formattedLastName}_${firstNameVar}_${badge}${ext}`);
+          
+          // Variation 4: base name without suffix
+          if (suffixVariation) {
+            variations.push(`/photos/${formattedBaseLastName}_${firstNameVar}_${badge}${ext}`);
+          }
+          
+          // Variation 5: compound name variations
+          variations.push(...generateCompoundNameVariations(firstNameVar, formattedBaseLastName, badge, ext));
+          variations.push(...generateCompoundNameVariations(firstNameVar, formattedLastName, badge, ext));
         }
       }
     }
@@ -127,6 +207,14 @@ function generatePhotoVariations(person: Personnel): string[] {
     
     if (suffixVariation && suffixVariation.startsWith('-')) {
       variations.push(`/photos/${formattedBaseLastName}${suffixVariation}_${formattedFirstName}${ext}`);
+    }
+    
+    // Additional variation for concatenated suffixes (castrojr_jorge.webp)
+    if (suffixVariation === '-jr') {
+      variations.push(`/photos/${formattedBaseLastName}jr_${formattedFirstName}${ext}`);
+    }
+    if (suffixVariation === '-sr') {
+      variations.push(`/photos/${formattedBaseLastName}sr_${formattedFirstName}${ext}`);
     }
     
     const formattedLastName = formatName(lastName);

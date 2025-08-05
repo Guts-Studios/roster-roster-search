@@ -7,20 +7,40 @@ import RosterList from "../components/RosterList";
 import Pagination from "../components/Pagination";
 import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
 import { useResponsivePlaceholder } from "../hooks/useResponsivePlaceholder";
+import { useRosterUrlState } from "../hooks/useUrlState";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { getPlaceholder } = useResponsivePlaceholder();
+  const { getRosterState, setRosterState } = useRosterUrlState();
   
+  // Initialize filters from URL state
+  const urlState = getRosterState();
   const [filters, setFilters] = useState<PersonnelFilters>({
-    firstName: '',
-    lastName: '',
-    badgeNumber: '',
-    sortBy: 'name',
-    sortOrder: 'asc',
-    page: 1,
-    pageSize: 25,
+    firstName: urlState.firstName,
+    lastName: urlState.lastName,
+    badgeNumber: urlState.badgeNumber,
+    sortBy: urlState.sortBy,
+    sortOrder: urlState.sortOrder,
+    page: urlState.page,
+    pageSize: urlState.pageSize,
   });
+  
+  // Initialize search query from URL state
+  useEffect(() => {
+    const urlState = getRosterState();
+    if (urlState.badgeNumber) {
+      setSearchQuery(urlState.badgeNumber);
+    } else if (urlState.firstName || urlState.lastName) {
+      const parts = [];
+      if (urlState.firstName) parts.push(urlState.firstName);
+      if (urlState.lastName && urlState.lastName !== urlState.firstName) parts.push(urlState.lastName);
+      setSearchQuery(parts.join(' '));
+    }
+    
+    // Set source to 'search' to distinguish from roster page
+    setRosterState({ source: 'search' });
+  }, [getRosterState, setRosterState]);
 
   // Only fetch data when there are search criteria
   const hasSearchCriteria = filters.firstName || filters.lastName || filters.badgeNumber;
@@ -34,13 +54,18 @@ const Search = () => {
         const isNumber = /^\d+$/.test(searchQuery.trim());
         
         if (isNumber) {
-          setFilters(prev => ({
-            ...prev,
+          const newFilters = {
             firstName: '',
             lastName: '',
             badgeNumber: searchQuery.trim(),
             page: 1
+          };
+          setFilters(prev => ({
+            ...prev,
+            ...newFilters
           }));
+          // Update URL state
+          setRosterState(newFilters);
         } else {
           // Parse name input to handle both single names and full names
           const nameParts = searchQuery.trim().split(/\s+/);
@@ -48,29 +73,39 @@ const Search = () => {
           if (nameParts.length === 1) {
             // Single name: search both first and last name fields
             const singleName = nameParts[0];
-            setFilters(prev => ({
-              ...prev,
+            const newFilters = {
               firstName: singleName,
               lastName: singleName,
               badgeNumber: '',
               page: 1
+            };
+            setFilters(prev => ({
+              ...prev,
+              ...newFilters
             }));
+            // Update URL state
+            setRosterState(newFilters);
           } else {
             // Multiple names: treat as first name + last name
             const firstName = nameParts[0];
             const lastName = nameParts.slice(1).join(' ');
-            setFilters(prev => ({
-              ...prev,
+            const newFilters = {
               firstName: firstName,
               lastName: lastName,
               badgeNumber: '',
               page: 1
+            };
+            setFilters(prev => ({
+              ...prev,
+              ...newFilters
             }));
+            // Update URL state
+            setRosterState(newFilters);
           }
         }
       } else {
         // Clear results when search query is empty
-        setFilters({
+        const clearedFilters: PersonnelFilters = {
           firstName: '',
           lastName: '',
           badgeNumber: '',
@@ -78,7 +113,10 @@ const Search = () => {
           sortOrder: 'asc',
           page: 1,
           pageSize: 25,
-        });
+        };
+        setFilters(clearedFilters);
+        // Clear URL state
+        setRosterState(clearedFilters);
       }
     }, 300); // 300ms debounce
 
@@ -91,13 +129,18 @@ const Search = () => {
       const isNumber = /^\d+$/.test(searchQuery.trim());
       
       if (isNumber) {
-        setFilters(prev => ({
-          ...prev,
+        const newFilters = {
           firstName: '',
           lastName: '',
           badgeNumber: searchQuery.trim(),
           page: 1
+        };
+        setFilters(prev => ({
+          ...prev,
+          ...newFilters
         }));
+        // Update URL state
+        setRosterState(newFilters);
       } else {
         // Parse name input to handle both single names and full names
         const nameParts = searchQuery.trim().split(/\s+/);
@@ -105,24 +148,34 @@ const Search = () => {
         if (nameParts.length === 1) {
           // Single name: search both first and last name fields
           const singleName = nameParts[0];
-          setFilters(prev => ({
-            ...prev,
+          const newFilters = {
             firstName: singleName,
             lastName: singleName,
             badgeNumber: '',
             page: 1
+          };
+          setFilters(prev => ({
+            ...prev,
+            ...newFilters
           }));
+          // Update URL state
+          setRosterState(newFilters);
         } else {
           // Multiple names: treat as first name + last name
           const firstName = nameParts[0];
           const lastName = nameParts.slice(1).join(' ');
-          setFilters(prev => ({
-            ...prev,
+          const newFilters = {
             firstName: firstName,
             lastName: lastName,
             badgeNumber: '',
             page: 1
+          };
+          setFilters(prev => ({
+            ...prev,
+            ...newFilters
           }));
+          // Update URL state
+          setRosterState(newFilters);
         }
       }
     }
@@ -130,7 +183,7 @@ const Search = () => {
 
   const handleClearSearch = () => {
     setSearchQuery('');
-    setFilters({
+    const clearedFilters: PersonnelFilters = {
       firstName: '',
       lastName: '',
       badgeNumber: '',
@@ -138,11 +191,16 @@ const Search = () => {
       sortOrder: 'asc',
       page: 1,
       pageSize: 25,
-    });
+    };
+    setFilters(clearedFilters);
+    // Clear URL state
+    setRosterState(clearedFilters);
   };
 
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page }));
+    // Update URL state
+    setRosterState({ page });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
