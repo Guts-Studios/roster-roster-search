@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 // Database connection configuration
-const DATABASE_URL = process.env.VITE_DATABASE_URL || 'DATABASE_URL_PLACEHOLDER';
+const DATABASE_URL = import.meta.env.VITE_DATABASE_URL || 'DATABASE_URL_PLACEHOLDER';
 
 // Create a connection pool
 const pool = new Pool({
