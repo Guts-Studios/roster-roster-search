@@ -1,0 +1,214 @@
+import express from 'express';
+import { Pool } from 'pg';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Database connection
+const DATABASE_URL = process.env.DATABASE_URL || process.env.VITE_DATABASE_URL || 'DATABASE_URL_PLACEHOLDER';
+
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Serve static files from dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// API Routes
+app.get('/api/personnel', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM personnel ORDER BY last_name ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching personnel:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/personnel/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Personnel not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching personnel by id:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/personnel/search', async (req, res) => {
+  try {
+    const { firstName, lastName, badgeNumber, division, sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
+    
+    // Build WHERE conditions and parameters
+    const whereConditions = [];
+    const queryParams = [];
+    let paramCount = 0;
+
+    // Apply search filters with smart logic
+    if (firstName && lastName && firstName === lastName) {
+      // Single name search: use OR logic to search both first and last name fields
+      const searchTerm = firstName.trim();
+      paramCount++;
+      whereConditions.push(`(first_name ILIKE $${paramCount} OR last_name ILIKE $${paramCount})`);
+      queryParams.push(`%${searchTerm}%`);
+    } else {
+      // Full name search: use AND logic for separate first and last names
+      if (firstName && firstName.trim()) {
+        paramCount++;
+        whereConditions.push(`first_name ILIKE $${paramCount}`);
+        queryParams.push(`%${firstName}%`);
+      }
+      
+      if (lastName && lastName.trim()) {
+        paramCount++;
+        whereConditions.push(`last_name ILIKE $${paramCount}`);
+        queryParams.push(`%${lastName}%`);
+      }
+    }
+    
+    if (badgeNumber && badgeNumber.trim()) {
+      paramCount++;
+      whereConditions.push(`badge_number ILIKE $${paramCount}`);
+      queryParams.push(`%${badgeNumber}%`);
+    }
+
+    // Apply division filter
+    if (division) {
+      paramCount++;
+      whereConditions.push(`division = $${paramCount}`);
+      queryParams.push(division);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // Get total count for pagination
+    const countQuery = `SELECT COUNT(*) FROM personnel ${whereClause}`;
+    const countResult = await pool.query(countQuery, queryParams);
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    // Build ORDER BY clause
+    let orderByClause = '';
+    if (sortBy === 'name') {
+      orderByClause = `ORDER BY last_name ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    } else if (sortBy === 'regular_pay') {
+      orderByClause = `ORDER BY regular_pay ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    } else if (sortBy === 'overtime') {
+      orderByClause = `ORDER BY overtime ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    } else {
+      // For total compensation, we'll sort client-side since it's calculated
+      orderByClause = `ORDER BY regular_pay ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    }
+
+    // Apply pagination
+    const startIndex = (page - 1) * pageSize;
+    const paginationClause = `LIMIT ${pageSize} OFFSET ${startIndex}`;
+
+    // Build main query
+    const mainQuery = `
+      SELECT * FROM personnel
+      ${whereClause}
+      ${orderByClause}
+      ${paginationClause}
+    `;
+
+    const result = await pool.query(mainQuery, queryParams);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    res.json({
+      data: result.rows,
+      totalCount,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error searching personnel:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/personnel-filter-options', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT DISTINCT division, classification FROM personnel WHERE division IS NOT NULL OR classification IS NOT NULL");
+    
+    const divisions = [...new Set(result.rows?.map(p => p.division).filter(Boolean))];
+    const classifications = [...new Set(result.rows?.map(p => p.classification).filter(Boolean))];
+
+    res.json({ divisions, classifications });
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/personnel/all', async (req, res) => {
+  try {
+    const { sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
+    
+    // Get total count for pagination
+    const countResult = await pool.query('SELECT COUNT(*) as count FROM personnel');
+    const totalCount = parseInt(countResult.rows[0].count) || 0;
+
+    // Build the main query with sorting
+    let orderClause = '';
+    if (sortBy === 'name') {
+      orderClause = `ORDER BY last_name ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    } else if (sortBy === 'regular_pay') {
+      orderClause = `ORDER BY regular_pay ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    } else if (sortBy === 'overtime') {
+      orderClause = `ORDER BY overtime ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    } else {
+      // For total compensation, we'll sort client-side since it's calculated
+      orderClause = `ORDER BY regular_pay ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    }
+
+    // Apply pagination
+    const startIndex = (page - 1) * pageSize;
+    const query = `
+      SELECT * FROM personnel
+      ${orderClause}
+      LIMIT $1 OFFSET $2
+    `;
+
+    const result = await pool.query(query, [pageSize, startIndex]);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    res.json({
+      data: result.rows,
+      totalCount,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error fetching all personnel:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Serve React app for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
