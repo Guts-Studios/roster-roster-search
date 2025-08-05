@@ -18,6 +18,46 @@ const ProfileDetails = () => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const { getReturnPath } = useRosterUrlState();
 
+  // Check for working photo URL by trying multiple variations (same logic as ProfileCard)
+  useEffect(() => {
+    if (!person) {
+      setPhotoUrl(null);
+      return;
+    }
+    
+    const findWorkingPhotoUrl = async () => {
+      const potentialUrls = getPhotoUrlVariations(person);
+      if (potentialUrls.length === 0) {
+        setPhotoUrl(null);
+        return;
+      }
+      
+      // Try each URL variation until we find one that works
+      for (const url of potentialUrls) {
+        try {
+          const success = await new Promise<boolean>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+          });
+          
+          if (success) {
+            setPhotoUrl(url);
+            return;
+          }
+        } catch {
+          continue;
+        }
+      }
+      
+      // If no variation worked, set to null
+      setPhotoUrl(null);
+    };
+    
+    findWorkingPhotoUrl();
+  }, [person]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -61,43 +101,6 @@ const ProfileDetails = () => {
   const fullName = getFullName(person);
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
-  
-  // Check for working photo URL by trying multiple variations (same logic as ProfileCard)
-  useEffect(() => {
-    if (!person) return;
-    
-    const findWorkingPhotoUrl = async () => {
-      const potentialUrls = getPhotoUrlVariations(person);
-      if (potentialUrls.length === 0) {
-        setPhotoUrl(null);
-        return;
-      }
-      
-      // Try each URL variation until we find one that works
-      for (const url of potentialUrls) {
-        try {
-          const success = await new Promise<boolean>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-            img.src = url;
-          });
-          
-          if (success) {
-            setPhotoUrl(url);
-            return;
-          }
-        } catch {
-          continue;
-        }
-      }
-      
-      // If no variation worked, set to null
-      setPhotoUrl(null);
-    };
-    
-    findWorkingPhotoUrl();
-  }, [person]);
   
   // Format compensation with commas and dollar sign (consistent with other pay fields)
   const formattedCompensation = totalCompensation > 0
