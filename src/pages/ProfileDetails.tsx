@@ -102,6 +102,7 @@ const ProfileDetails = () => {
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
   
+  
   // Format currency with exactly 2 decimal places and comma separators
   const formatCurrency = (value: number | null | undefined): string => {
     if (value === null || value === undefined || isNaN(value) || value <= 0) {
@@ -117,7 +118,7 @@ const ProfileDetails = () => {
 
   const formattedCompensation = totalCompensation > 0
     ? formatCurrency(totalCompensation)
-    : "Not available";
+    : 'Not available';
 
   return (
     <div className="min-h-screen bg-background">
