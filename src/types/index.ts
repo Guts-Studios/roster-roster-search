@@ -23,10 +23,14 @@ export const getFullName = (person: Personnel): string => {
 
 // Helper function to get total compensation
 export const getTotalCompensation = (person: Personnel): number => {
-  return (person.regular_pay || 0) +
-         (person.premiums || 0) +
-         (person.overtime || 0) +
-         (person.payout || 0) +
-         (person.other_pay || 0) +
-         (person.health_dental_vision || 0);
+  const safeNumber = (value: number | null | undefined): number => {
+    return (value && !isNaN(value)) ? value : 0;
+  };
+
+  return safeNumber(person.regular_pay) +
+         safeNumber(person.premiums) +
+         safeNumber(person.overtime) +
+         safeNumber(person.payout) +
+         safeNumber(person.other_pay) +
+         safeNumber(person.health_dental_vision);
 }

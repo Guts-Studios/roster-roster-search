@@ -116,7 +116,22 @@ const ProfileDetails = () => {
   // Production-safe total calculation
   const calculateTotalCompensation = (): string => {
     try {
+      // Debug logging for production
+      if (typeof window !== 'undefined') {
+        console.log('Compensation Debug:', {
+          badge_number: person.badge_number,
+          regular_pay: person.regular_pay,
+          premiums: person.premiums,
+          overtime: person.overtime,
+          payout: person.payout,
+          other_pay: person.other_pay,
+          health_dental_vision: person.health_dental_vision
+        });
+      }
+      
       const total = getTotalCompensation(person);
+      console.log('Calculated total:', total);
+      
       return total > 0 ? formatCurrency(total) : 'Not available';
     } catch (error) {
       console.error('Error calculating total compensation:', error);
