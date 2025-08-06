@@ -23,14 +23,28 @@ export const getFullName = (person: Personnel): string => {
 
 // Helper function to get total compensation
 export const getTotalCompensation = (person: Personnel): number => {
-  const safeNumber = (value: number | null | undefined): number => {
-    return (value && !isNaN(value)) ? value : 0;
-  };
+  console.log('🔍 getTotalCompensation called at:', new Date().toISOString());
+  
+  // Force number conversion and addition
+  const regular_pay = parseFloat(person.regular_pay?.toString() || '0') || 0;
+  const premiums = parseFloat(person.premiums?.toString() || '0') || 0;
+  const overtime = parseFloat(person.overtime?.toString() || '0') || 0;
+  const payout = parseFloat(person.payout?.toString() || '0') || 0;
+  const other_pay = parseFloat(person.other_pay?.toString() || '0') || 0;
+  const health_dental_vision = parseFloat(person.health_dental_vision?.toString() || '0') || 0;
 
-  return safeNumber(person.regular_pay) +
-         safeNumber(person.premiums) +
-         safeNumber(person.overtime) +
-         safeNumber(person.payout) +
-         safeNumber(person.other_pay) +
-         safeNumber(person.health_dental_vision);
-}
+  console.log('🔢 Converted numbers:', { regular_pay, premiums, overtime, payout, other_pay, health_dental_vision });
+
+  // Explicit mathematical addition using a temporary calculation
+  let total = 0;
+  total = total + regular_pay;
+  total = total + premiums;
+  total = total + overtime;
+  total = total + payout;
+  total = total + other_pay;
+  total = total + health_dental_vision;
+
+  console.log('🧮 Final calculated total:', total);
+
+  return total;
+};
