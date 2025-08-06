@@ -102,9 +102,21 @@ const ProfileDetails = () => {
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
   
-  // Format compensation with commas and dollar sign (consistent with other pay fields)
+  // Format currency with exactly 2 decimal places and comma separators
+  const formatCurrency = (value: number | null | undefined): string => {
+    if (value === null || value === undefined || isNaN(value) || value <= 0) {
+      return '$0.00';
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
+
   const formattedCompensation = totalCompensation > 0
-    ? `$${totalCompensation.toLocaleString()}`
+    ? formatCurrency(totalCompensation)
     : "Not available";
 
   return (
@@ -191,7 +203,7 @@ const ProfileDetails = () => {
                 <div className="border-l-4 border-black pl-6 py-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Regular Pay</h2>
                   <p className="text-2xl font-bold text-black">
-                    ${person.regular_pay.toLocaleString()}
+                    {formatCurrency(person.regular_pay)}
                   </p>
                 </div>
               )}
@@ -200,7 +212,7 @@ const ProfileDetails = () => {
                 <div className="border-l-4 border-black pl-6 py-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Overtime</h2>
                   <p className="text-2xl font-bold text-black">
-                    ${person.overtime.toLocaleString()}
+                    {formatCurrency(person.overtime)}
                   </p>
                 </div>
               )}
@@ -209,7 +221,7 @@ const ProfileDetails = () => {
                 <div className="border-l-4 border-black pl-6 py-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Premiums</h2>
                   <p className="text-2xl font-bold text-black">
-                    ${person.premiums.toLocaleString()}
+                    {formatCurrency(person.premiums)}
                   </p>
                 </div>
               )}
@@ -218,7 +230,7 @@ const ProfileDetails = () => {
                 <div className="border-l-4 border-black pl-6 py-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Health/Dental/Vision</h2>
                   <p className="text-2xl font-bold text-black">
-                    ${person.health_dental_vision.toLocaleString()}
+                    {formatCurrency(person.health_dental_vision)}
                   </p>
                 </div>
               )}
@@ -227,7 +239,7 @@ const ProfileDetails = () => {
                 <div className="border-l-4 border-black pl-6 py-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Payout</h2>
                   <p className="text-2xl font-bold text-black">
-                    ${person.payout.toLocaleString()}
+                    {formatCurrency(person.payout)}
                   </p>
                 </div>
               )}

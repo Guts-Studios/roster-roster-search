@@ -23,9 +23,10 @@ export const getFullName = (person: Personnel): string => {
 
 // Helper function to get total compensation
 export const getTotalCompensation = (person: Personnel): number => {
-  return (person.regular_pay || 0) + 
-         (person.premiums || 0) + 
-         (person.overtime || 0) + 
-         (person.payout || 0) + 
-         (person.other_pay || 0);
+  return (person.regular_pay || 0) +
+         (person.premiums || 0) +
+         (person.overtime || 0) +
+         (person.payout || 0) +
+         (person.other_pay || 0) +
+         (person.health_dental_vision || 0);
 }
