@@ -102,6 +102,15 @@ const ProfileDetails = () => {
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
   const totalCompensation = getTotalCompensation(person);
   
+  // Backup calculation to ensure total displays correctly in production
+  const backupTotal = (person.regular_pay || 0) +
+                     (person.premiums || 0) +
+                     (person.overtime || 0) +
+                     (person.payout || 0) +
+                     (person.other_pay || 0) +
+                     (person.health_dental_vision || 0);
+  
+  const finalTotal = totalCompensation > 0 ? totalCompensation : backupTotal;
   
   // Format currency with exactly 2 decimal places and comma separators
   const formatCurrency = (value: number | null | undefined): string => {
@@ -116,8 +125,8 @@ const ProfileDetails = () => {
     }).format(value);
   };
 
-  const formattedCompensation = totalCompensation > 0
-    ? formatCurrency(totalCompensation)
+  const formattedCompensation = finalTotal > 0
+    ? formatCurrency(finalTotal)
     : 'Not available';
 
   return (
