@@ -100,19 +100,7 @@ const ProfileDetails = () => {
 
   const fullName = getFullName(person);
   const initials = `${person.first_name[0]}${person.last_name[0]}`;
-  const totalCompensation = getTotalCompensation(person);
-  
-  // Backup calculation to ensure total displays correctly in production
-  const backupTotal = (person.regular_pay || 0) +
-                     (person.premiums || 0) +
-                     (person.overtime || 0) +
-                     (person.payout || 0) +
-                     (person.other_pay || 0) +
-                     (person.health_dental_vision || 0);
-  
-  const finalTotal = totalCompensation > 0 ? totalCompensation : backupTotal;
-  
-  // Format currency with exactly 2 decimal places and comma separators
+  // Production-safe currency formatting function
   const formatCurrency = (value: number | null | undefined): string => {
     if (value === null || value === undefined || isNaN(value) || value <= 0) {
       return '$0.00';
@@ -125,9 +113,18 @@ const ProfileDetails = () => {
     }).format(value);
   };
 
-  const formattedCompensation = finalTotal > 0
-    ? formatCurrency(finalTotal)
-    : 'Not available';
+  // Production-safe total calculation
+  const calculateTotalCompensation = (): string => {
+    try {
+      const total = getTotalCompensation(person);
+      return total > 0 ? formatCurrency(total) : 'Not available';
+    } catch (error) {
+      console.error('Error calculating total compensation:', error);
+      return 'Not available';
+    }
+  };
+
+  const formattedCompensation = calculateTotalCompensation();
 
   return (
     <div className="min-h-screen bg-background">
