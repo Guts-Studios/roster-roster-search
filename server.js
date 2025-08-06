@@ -3,6 +3,11 @@ import { Pool } from 'pg';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,7 +16,13 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Database connection
-const DATABASE_URL = process.env.DATABASE_URL || process.env.VITE_DATABASE_URL || 'DATABASE_URL_PLACEHOLDER';
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL environment variable is required');
+  console.error('Please set DATABASE_URL in your Railway environment variables');
+  process.exit(1);
+}
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -23,9 +34,52 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+// Rate limiting for authentication endpoint
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 authentication attempts per windowMs
+  message: {
+    error: 'Too many authentication attempts from this IP, please try again after 15 minutes.'
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// General rate limiting for API endpoints
+const apiRateLimit = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Too many requests from this IP, please try again after a minute.'
+  }
+});
+
+// Security headers middleware
+app.use((req, res, next) => {
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // Enable XSS protection
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Strict transport security (HTTPS only)
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  
+  // Basic Content Security Policy
+  res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:;");
+  
+  next();
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api', apiRateLimit); // Apply rate limiting to all API routes
 
 // Serve static files from dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
@@ -160,8 +214,8 @@ app.get('/api/personnel-filter-options', async (req, res) => {
   }
 });
 
-// Authentication endpoint
-app.post('/api/auth/verify', async (req, res) => {
+// Authentication endpoint with rate limiting
+app.post('/api/auth/verify', authRateLimit, async (req, res) => {
   try {
     const { password } = req.body;
     
@@ -185,8 +239,8 @@ app.post('/api/auth/verify', async (req, res) => {
       return res.status(500).json({ error: 'Authentication configuration not found' });
     }
 
-    // Hash the input password with the same salt
-    const salt = 'watch_the_watchers_salt_2024';
+    // Hash the input password with the same salt from environment variable
+    const salt = process.env.PASSWORD_SALT || 'watch_the_watchers_salt_2024';
     const inputHash = await hashPassword(password, salt);
     
     // Compare hashes

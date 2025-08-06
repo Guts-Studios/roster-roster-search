@@ -116,8 +116,6 @@ const ProfileDetails = () => {
   // Production-safe total calculation
   const calculateTotalCompensation = (): string => {
     try {
-      console.log('🚨 CALCULATING TOTAL COMPENSATION - FORCED UPDATE');
-      
       // Manual calculation to bypass any caching issues
       const regularPayNum = parseFloat(String(person.regular_pay || '0')) || 0;
       const premiumsNum = parseFloat(String(person.premiums || '0')) || 0;
@@ -126,26 +124,26 @@ const ProfileDetails = () => {
       const otherPayNum = parseFloat(String(person.other_pay || '0')) || 0;
       const healthNum = parseFloat(String(person.health_dental_vision || '0')) || 0;
       
-      console.log('🔢 Manual conversion:', {
-        regular_pay: regularPayNum,
-        premiums: premiumsNum,
-        overtime: overtimeNum,
-        payout: payoutNum,
-        other_pay: otherPayNum,
-        health_dental_vision: healthNum
-      });
+      // Development-only debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Compensation calculation debug:', {
+          regular_pay: regularPayNum,
+          premiums: premiumsNum,
+          overtime: overtimeNum,
+          payout: payoutNum,
+          other_pay: otherPayNum,
+          health_dental_vision: healthNum
+        });
+      }
       
       // Force numerical addition
       const manualTotal = regularPayNum + premiumsNum + overtimeNum + payoutNum + otherPayNum + healthNum;
-      console.log('🧮 Manual total calculation:', manualTotal);
-      
-      // Also try the getTotalCompensation function
-      const functionTotal = getTotalCompensation(person);
-      console.log('📊 Function total:', functionTotal);
       
       return manualTotal > 0 ? formatCurrency(manualTotal) : 'Not available';
     } catch (error) {
-      console.error('Error calculating total compensation:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error calculating total compensation:', error);
+      }
       return 'Not available';
     }
   };
