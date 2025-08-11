@@ -63,8 +63,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
   return (
     <Link to={createProfileLink(person.id)}>
       <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
-        <CardHeader className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 pb-2 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
-          <div className="relative h-[4.5rem] w-16 sm:h-[5.5rem] sm:w-20 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">
+        <CardHeader className="flex flex-row items-center gap-4 sm:gap-6 pb-3 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
+          <div className="relative h-32 w-24 sm:h-40 sm:w-32 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">
             {photoUrl ? (
               <img
                 src={photoUrl}
@@ -73,18 +73,18 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
               />
             ) : (
               <div className="w-full h-full bg-inadvertent-yellow flex items-center justify-center">
-                <span className="text-inadvertent-dark-text font-semibold text-sm sm:text-base">{initials}</span>
+                <span className="text-inadvertent-dark-text font-semibold text-lg sm:text-xl">{initials}</span>
               </div>
             )}
           </div>
-          <div className="flex flex-col text-center sm:text-left min-w-0 flex-1">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{fullName}</h3>
-            <div className="flex flex-col sm:flex-row items-center gap-2 mt-1">
-              {person.badge_number && <Badge variant="outline" className="text-xs border-inadvertent-yellow text-foreground bg-inadvertent-yellow/10 whitespace-nowrap">
+          <div className="flex flex-col text-left min-w-0 flex-1 justify-center">
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate mb-2">{fullName}</h3>
+            <div className="flex flex-col gap-2">
+              {person.badge_number && <Badge variant="outline" className="text-sm sm:text-base border-inadvertent-yellow text-foreground bg-inadvertent-yellow/10 whitespace-nowrap w-fit">
                 Badge #{person.badge_number}
               </Badge>}
-              {person.classification && <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 truncate">
-                <Shield size={12} className="text-inadvertent-yellow flex-shrink-0" />
+              {person.classification && <span className="text-sm sm:text-base text-muted-foreground flex items-center gap-1 truncate">
+                <Shield size={16} className="text-inadvertent-yellow flex-shrink-0" />
                 <span className="truncate">{person.classification}</span>
               </span>}
             </div>
