@@ -164,7 +164,7 @@ const About = () => {
 
               <h2 className="text-2xl font-bold mb-4 text-inadvertent-yellow">How can I support this project?</h2>
               <p className="mb-6">
-                Maintaining this database is laborious. You can become a <a href="https://inadvertent.substack.com/" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">paid subscriber to Inadvertent</a> to ensure that the database stays in working condition and continues to be updated. You can also <a href="https://inadvertent.substack.com/p/contact" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">reach out to Inadvertent</a> if you would like to make a one-time donation.
+                Maintaining this database is laborious. You can become a <a href="https://inadvertent.substack.com/" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">paid subscriber to Inadvertent</a> to ensure that the database stays in working condition and continues to be updated. If you would like to make a one-time donation use this link. <a href="https://ko-fi.com/inadvertent" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">https://ko-fi.com/inadvertent</a>
               </p>
             </div>
           </div>
