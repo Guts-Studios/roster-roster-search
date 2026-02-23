@@ -12,6 +12,13 @@ export interface Personnel {
   payout?: number;
   other_pay?: number;
   health_dental_vision?: number;
+  gender?: string;
+  ethnicity?: string;
+  height?: string;
+  weight?: number;
+  year_of_hire?: number;
+  roster_year?: number;
+  is_current?: boolean;
   created_at?: string;
   updated_at?: string;
 }

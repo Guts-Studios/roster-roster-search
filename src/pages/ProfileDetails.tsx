@@ -219,9 +219,50 @@ const ProfileDetails = () => {
             </div>
           </div>
           
+          {/* Personal Details Section */}
+          {(person.gender || person.ethnicity || person.height || person.weight || person.year_of_hire) && (
+            <div className="p-8 border-t border-gray-200">
+              <h3 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
+                Personal Details
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {person.year_of_hire && (
+                  <div className="border-l-4 border-black pl-6 py-2">
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Year of Hire</h2>
+                    <p className="text-xl font-bold text-black">{person.year_of_hire}</p>
+                  </div>
+                )}
+                {person.gender && (
+                  <div className="border-l-4 border-black pl-6 py-2">
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Gender</h2>
+                    <p className="text-xl font-bold text-black">{person.gender}</p>
+                  </div>
+                )}
+                {person.ethnicity && (
+                  <div className="border-l-4 border-black pl-6 py-2">
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Ethnicity</h2>
+                    <p className="text-xl font-bold text-black">{person.ethnicity}</p>
+                  </div>
+                )}
+                {person.height && (
+                  <div className="border-l-4 border-black pl-6 py-2">
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Height</h2>
+                    <p className="text-xl font-bold text-black">{person.height}</p>
+                  </div>
+                )}
+                {person.weight && (
+                  <div className="border-l-4 border-black pl-6 py-2">
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Weight</h2>
+                    <p className="text-xl font-bold text-black">{person.weight} lbs</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Data Disclaimer */}
           <div className="px-8 py-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-sm text-gray-600 text-center">Disclaimer: Data is current as of 2024</p>
+            <p className="text-sm text-gray-600 text-center">Disclaimer: Roster data current as of {person.roster_year || 2024}. Payroll data current as of 2024.</p>
           </div>
           
           {/* Enhanced Compensation Section */}

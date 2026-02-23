@@ -3,9 +3,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Personnel, getFullName, getTotalCompensation } from "../types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 import { getPhotoUrlVariations } from "@/utils/photoUtils";
 import { useRosterUrlState } from "../hooks/useUrlState";
 
@@ -62,7 +61,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
 
   return (
     <Link to={createProfileLink(person.id)}>
-      <Card className="w-full hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
+      <Card className="w-full h-full min-h-[320px] flex flex-col hover:shadow-md transition-shadow border-border cursor-pointer bg-card">
         <CardHeader className="flex flex-row items-center gap-4 sm:gap-6 pb-3 bg-gradient-to-r from-inadvertent-yellow/5 to-inadvertent-yellow/0">
           <div className="relative h-32 w-24 sm:h-40 sm:w-32 bg-inadvertent-yellow border-2 border-inadvertent-yellow flex-shrink-0 rounded-md overflow-hidden">
             {photoUrl ? (
@@ -90,7 +89,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-2 px-3 sm:px-6">
+        <CardContent className="pt-2 px-3 sm:px-6 flex-1 flex flex-col justify-between">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs sm:text-sm">
             {person.division && (
               <div className="col-span-1 sm:col-span-2">
@@ -108,18 +107,18 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
             {person.regular_pay && (
               <div className="break-words">
                 <span className="font-medium">Base Pay:</span>{" "}
-                <span className="break-all">${person.regular_pay.toLocaleString()}</span>
+                <span className="break-all">${Number(person.regular_pay).toLocaleString()}</span>
               </div>
             )}
-            {person.overtime && person.overtime > 0 && (
+            {person.overtime && Number(person.overtime) > 0 && (
               <div className="break-words">
                 <span className="font-medium">Overtime:</span>{" "}
-                <span className="break-all">${person.overtime.toLocaleString()}</span>
+                <span className="break-all">${Number(person.overtime).toLocaleString()}</span>
               </div>
             )}
           </div>
           <div className="mt-3 text-center border-t border-border pt-2">
-            <p className="text-xs text-muted-foreground">Disclaimer: Data is current as of 2024</p>
+            <p className="text-xs text-muted-foreground">Disclaimer: Roster data current as of {person.roster_year || 2024}. Pay data current as of 2024.</p>
           </div>
         </CardContent>
       </Card>

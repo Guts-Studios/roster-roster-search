@@ -87,7 +87,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 // API Routes
 app.get('/api/personnel', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM personnel ORDER BY last_name ASC');
+    const result = await pool.query('SELECT * FROM personnel WHERE is_current = true ORDER BY last_name ASC');
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching personnel:', error);
@@ -114,7 +114,7 @@ app.post('/api/personnel/search', async (req, res) => {
     const { firstName, lastName, badgeNumber, division, sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
     
     // Build WHERE conditions and parameters
-    const whereConditions = [];
+    const whereConditions = ['is_current = true'];
     const queryParams = [];
     let paramCount = 0;
 
@@ -153,7 +153,7 @@ app.post('/api/personnel/search', async (req, res) => {
       queryParams.push(division);
     }
 
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const whereClause = `WHERE ${whereConditions.join(' AND ')}`;
 
     // Get total count for pagination
     const countQuery = `SELECT COUNT(*) FROM personnel ${whereClause}`;
@@ -202,7 +202,7 @@ app.post('/api/personnel/search', async (req, res) => {
 
 app.get('/api/personnel-filter-options', async (req, res) => {
   try {
-    const result = await pool.query("SELECT DISTINCT division, classification FROM personnel WHERE division IS NOT NULL OR classification IS NOT NULL");
+    const result = await pool.query("SELECT DISTINCT division, classification FROM personnel WHERE is_current = true AND (division IS NOT NULL OR classification IS NOT NULL)");
     
     const divisions = [...new Set(result.rows?.map(p => p.division).filter(Boolean))];
     const classifications = [...new Set(result.rows?.map(p => p.classification).filter(Boolean))];
@@ -258,7 +258,7 @@ app.post('/api/personnel/all', async (req, res) => {
     const { sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
     
     // Get total count for pagination
-    const countResult = await pool.query('SELECT COUNT(*) as count FROM personnel');
+    const countResult = await pool.query('SELECT COUNT(*) as count FROM personnel WHERE is_current = true');
     const totalCount = parseInt(countResult.rows[0].count) || 0;
 
     // Build the main query with sorting
@@ -278,6 +278,7 @@ app.post('/api/personnel/all', async (req, res) => {
     const startIndex = (page - 1) * pageSize;
     const query = `
       SELECT * FROM personnel
+      WHERE is_current = true
       ${orderClause}
       LIMIT $1 OFFSET $2
     `;
@@ -318,16 +319,18 @@ app.post('/api/personnel/search-simple', async (req, res) => {
     const { searchTerm } = req.body;
     
     if (!searchTerm?.trim()) {
-      const result = await pool.query('SELECT * FROM personnel ORDER BY last_name ASC');
+      const result = await pool.query('SELECT * FROM personnel WHERE is_current = true ORDER BY last_name ASC');
       return res.json(result.rows);
     }
 
     const searchPattern = `%${searchTerm}%`;
     const result = await pool.query(
       `SELECT * FROM personnel
-       WHERE last_name ILIKE $1
+       WHERE is_current = true AND (
+          last_name ILIKE $1
           OR first_name ILIKE $1
           OR badge_number ILIKE $1
+       )
        ORDER BY last_name ASC`,
       [searchPattern]
     );
@@ -346,36 +349,35 @@ app.post('/api/personnel/stats', async (req, res) => {
     
     if (type === 'top-salaries') {
       const { limit = 50, division, classification, sortBy = 'total_compensation' } = filters;
-      
-      let whereClause = '';
+
+      let whereClause = 'is_current = true';
       const params = [];
       let paramCount = 0;
 
       if (division) {
-        whereClause += `division = $${++paramCount}`;
+        whereClause += ` AND division = $${++paramCount}`;
         params.push(division);
       }
-      
+
       if (classification) {
-        if (whereClause) whereClause += ' AND ';
-        whereClause += `classification = $${++paramCount}`;
+        whereClause += ` AND classification = $${++paramCount}`;
         params.push(classification);
       }
-      
+
       const query = `
         SELECT * FROM personnel
-        ${whereClause ? `WHERE ${whereClause}` : ''}
+        WHERE ${whereClause}
       `;
 
       const result = await pool.query(query, params);
       res.json(result.rows);
-      
+
     } else if (type === 'aggregates') {
-      const result = await pool.query('SELECT * FROM personnel');
+      const result = await pool.query('SELECT * FROM personnel WHERE is_current = true');
       res.json(result.rows);
-      
+
     } else if (type === 'unique-values') {
-      const result = await pool.query('SELECT DISTINCT division, classification FROM personnel');
+      const result = await pool.query('SELECT DISTINCT division, classification FROM personnel WHERE is_current = true');
       res.json(result.rows);
       
     } else {

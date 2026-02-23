@@ -1,119 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search as SearchIcon, X } from "lucide-react";
-import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPersonnel";
-import RosterList from "../components/RosterList";
-import Pagination from "../components/Pagination";
-
 const About = () => {
-  // Search functionality
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchFilters, setSearchFilters] = useState<PersonnelFilters>({
-    firstName: '',
-    lastName: '',
-    badgeNumber: '',
-    sortBy: 'name',
-    sortOrder: 'asc',
-    page: 1,
-    pageSize: 25,
-  });
-
-  // Only fetch search data when there are search criteria
-  const hasSearchCriteria = searchFilters.firstName || searchFilters.lastName || searchFilters.badgeNumber;
-  const { data: searchResponse, isLoading: searchLoading, error: searchError } = useAdvancedPersonnel(searchFilters);
-
-  // Auto-search with debounce as user types
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.trim()) {
-        // Check if it's a number (badge number) or text (name)
-        const isNumber = /^\d+$/.test(searchQuery.trim());
-        
-        if (isNumber) {
-          setSearchFilters(prev => ({
-            ...prev,
-            firstName: '',
-            lastName: '',
-            badgeNumber: searchQuery.trim(),
-            page: 1
-          }));
-        } else {
-          // For names, search in both first and last name
-          setSearchFilters(prev => ({
-            ...prev,
-            firstName: searchQuery.trim(),
-            lastName: searchQuery.trim(),
-            badgeNumber: '',
-            page: 1
-          }));
-        }
-      } else {
-        // Clear results when search query is empty
-        setSearchFilters({
-          firstName: '',
-          lastName: '',
-          badgeNumber: '',
-          sortBy: 'name',
-          sortOrder: 'asc',
-          page: 1,
-          pageSize: 25,
-        });
-      }
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      // Check if it's a number (badge number) or text (name)
-      const isNumber = /^\d+$/.test(searchQuery.trim());
-      
-      if (isNumber) {
-        setSearchFilters(prev => ({
-          ...prev,
-          firstName: '',
-          lastName: '',
-          badgeNumber: searchQuery.trim(),
-          page: 1
-        }));
-      } else {
-        // For names, search in both first and last name
-        setSearchFilters(prev => ({
-          ...prev,
-          firstName: searchQuery.trim(),
-          lastName: searchQuery.trim(),
-          badgeNumber: '',
-          page: 1
-        }));
-      }
-    }
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setSearchFilters({
-      firstName: '',
-      lastName: '',
-      badgeNumber: '',
-      sortBy: 'name',
-      sortOrder: 'asc',
-      page: 1,
-      pageSize: 25,
-    });
-  };
-
-  const handlePageChange = (page: number) => {
-    setSearchFilters(prev => ({ ...prev, page }));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -159,12 +44,12 @@ const About = () => {
 
               <h2 className="text-2xl font-bold mb-4 text-inadvertent-yellow">Is this up to date?</h2>
               <p className="mb-6">
-                Data for the SAPD is current as of 2024. It is only as current as the last time the city of Santa Ana released the data. The database is entirely based on the city's data so if you see that something is wrong, it is because updated data has not been released by the city.
+                Roster data for the SAPD is current as of 2026. Payroll data is current as of 2024, with updated payroll expected in April 2026. The database is entirely based on the city's data so if you see that something is wrong, it is because updated data has not been released by the city.
               </p>
 
               <h2 className="text-2xl font-bold mb-4 text-inadvertent-yellow">How can I support this project?</h2>
               <p className="mb-6">
-                Maintaining this database is laborious. You can become a <a href="https://inadvertent.substack.com/" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">paid subscriber to Inadvertent</a> to ensure that the database stays in working condition and continues to be updated. If you would like to make a one-time donation use this link. <a href="https://ko-fi.com/inadvertent" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">https://ko-fi.com/inadvertent</a>
+                Maintaining this database is laborious. You can become a <a href="https://inadvertent.substack.com/" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">paid subscriber to Inadvertent</a> to ensure that the database stays in working condition and continues to be updated. If you would like to make a one-time donation use <a href="https://ko-fi.com/inadvertent" target="_blank" rel="noopener noreferrer" className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline">this link</a>.
               </p>
             </div>
           </div>

@@ -14,6 +14,13 @@ export interface Personnel {
   premiums: number | null;
   health_dental_vision: number | null;
   payout: number | null;
+  gender: string | null;
+  ethnicity: string | null;
+  height: string | null;
+  weight: number | null;
+  year_of_hire: number | null;
+  roster_year: number | null;
+  is_current: boolean | null;
 }
 
 export interface AppConfig {
