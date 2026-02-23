@@ -5,11 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-02-23
+## [4.0.0] - 2026-02-23
+
+### Added
+- **2026 Roster Migration**: Migrated 350 personnel records from March 2026 SAPD roster data
+- **Historical Versioning**: Added `roster_year` and `is_current` columns for year-over-year data retention
+- **Demographic Fields**: Added gender, ethnicity, height, weight, and year of hire to personnel records
+- **Personal Details Section**: New section on profile pages displaying demographic information
+- **69 New Photos**: Extracted and converted personnel photos from roster spreadsheet (WebP format)
+- **CSV Header Validation**: Migration script now validates expected column headers before processing
+- **Migration Scripts**: `scripts/migrate-2026-schema.sql` and `scripts/migrate-2026-roster.cjs` for reproducibility
 
 ### Changed
+- **API Endpoints**: All query endpoints now filter by `is_current = true` to show only current roster
+- **Disclaimers**: Profile cards and detail pages now differentiate roster year vs payroll year
+- **Profile Cards**: Consistent card heights with flex layout; proper number formatting with commas
 - **About Page**: Removed embedded search functionality (dead code cleanup); page is now static content only
 - **About Page**: Updated one-time donation link to Ko-fi (`ko-fi.com/inadvertent`)
+- **About Page**: Updated data currency text to reflect 2026 roster / 2024 payroll
+
+### Fixed
+- **Security**: Parameterized LIMIT/OFFSET in search endpoint to prevent DoS via unbounded queries
+- **Security**: Removed duplicate `GET /api/personnel/:id` route (dead code)
+- **Error Handling**: `usePersonnelById` now properly surfaces server errors instead of swallowing them
+- **Number Formatting**: Base Pay and Overtime display with proper comma separators
+- **Accessibility**: Fixed inverted h2/h3 heading hierarchy on profile details page
+- **Type Safety**: Added `Number()` coercion for pay field visibility guards (handles string DB values)
+
+### Technical
+- 318 historical (2024) records preserved with `is_current=false`
+- Composite unique constraint on `(badge_number, roster_year)` supports multi-year data
+- 10 existing PNG photos converted to WebP for consistency
 
 ## [3.0.0] - 2025-08-05
 

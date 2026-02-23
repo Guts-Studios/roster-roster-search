@@ -28,13 +28,25 @@ async function migrate() {
 
     console.log('Parsed ' + newRows.length + ' rows from CSV');
 
+    // Validate expected CSV headers
+    const expectedHeaders = ['Last Name', 'First Name', 'Classification', 'Badge #', 'Division', 'Gender', 'Ethnicity', 'Height', 'Weight', 'Year of Hire'];
+    const actualHeaders = parsed.meta.fields || [];
+    const missingHeaders = expectedHeaders.filter(h => !actualHeaders.includes(h));
+    if (missingHeaders.length > 0) {
+      throw new Error('CSV is missing expected headers: ' + missingHeaders.join(', '));
+    }
+
     await client.query('BEGIN');
 
     // Step 2: Ensure existing records are tagged as 2024/inactive
     const backfillResult = await client.query(
       'UPDATE personnel SET roster_year = 2024, is_current = false WHERE roster_year IS NULL'
     );
-    console.log('Backfilled ' + backfillResult.rowCount + ' existing records as 2024');
+    if (backfillResult.rowCount > 0) {
+      console.log('Backfilled ' + backfillResult.rowCount + ' existing records as 2024');
+    } else {
+      console.log('No untagged records to backfill (schema migration likely already ran)');
+    }
 
     // Step 3: Load 2024 records keyed by badge for payroll lookup
     const existing2024 = await client.query(
@@ -66,8 +78,8 @@ async function migrate() {
       const gender = (csvRow['Gender'] || '').trim() || null;
       const ethnicity = (csvRow['Ethnicity'] || '').trim() || null;
       const height = (csvRow['Height'] || '').trim() || null;
-      const weight = csvRow['Weight'] ? parseInt(csvRow['Weight']) : null;
-      const yearOfHire = csvRow['Year of Hire'] ? parseInt(csvRow['Year of Hire']) : null;
+      const weight = csvRow['Weight'] ? (parseInt(csvRow['Weight']) || null) : null;
+      const yearOfHire = csvRow['Year of Hire'] ? (parseInt(csvRow['Year of Hire']) || null) : null;
 
       if (!firstName && !lastName) continue; // skip empty rows
 

@@ -14,7 +14,7 @@ interface ProfileCardProps {
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
   const fullName = getFullName(person);
-  const initials = `${person.first_name[0]}${person.last_name[0]}`;
+  const initials = `${person.first_name?.[0] || ''}${person.last_name?.[0] || ''}`;
   const totalCompensation = getTotalCompensation(person);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const { createProfileLink } = useRosterUrlState();
@@ -104,13 +104,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ person }) => {
                 </span>
               </div>
             )}
-            {person.regular_pay && (
+            {person.regular_pay != null && Number(person.regular_pay) > 0 && (
               <div className="break-words">
                 <span className="font-medium">Base Pay:</span>{" "}
                 <span className="break-all">${Number(person.regular_pay).toLocaleString()}</span>
               </div>
             )}
-            {person.overtime && Number(person.overtime) > 0 && (
+            {person.overtime != null && Number(person.overtime) > 0 && (
               <div className="break-words">
                 <span className="font-medium">Overtime:</span>{" "}
                 <span className="break-all">${Number(person.overtime).toLocaleString()}</span>

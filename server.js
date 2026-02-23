@@ -111,8 +111,10 @@ app.get('/api/personnel/:id', async (req, res) => {
 
 app.post('/api/personnel/search', async (req, res) => {
   try {
-    const { firstName, lastName, badgeNumber, division, sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
-    
+    const { firstName, lastName, badgeNumber, division, sortBy = 'name', sortOrder = 'asc' } = req.body;
+    const page = Math.max(1, parseInt(req.body.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.body.pageSize) || 20));
+
     // Build WHERE conditions and parameters
     const whereConditions = ['is_current = true'];
     const queryParams = [];
@@ -173,16 +175,21 @@ app.post('/api/personnel/search', async (req, res) => {
       orderByClause = `ORDER BY regular_pay ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
     }
 
-    // Apply pagination
+    // Apply pagination with parameterized values
     const startIndex = (page - 1) * pageSize;
-    const paginationClause = `LIMIT ${pageSize} OFFSET ${startIndex}`;
+    paramCount++;
+    const limitParam = paramCount;
+    queryParams.push(pageSize);
+    paramCount++;
+    const offsetParam = paramCount;
+    queryParams.push(startIndex);
 
     // Build main query
     const mainQuery = `
       SELECT * FROM personnel
       ${whereClause}
       ${orderByClause}
-      ${paginationClause}
+      LIMIT $${limitParam} OFFSET $${offsetParam}
     `;
 
     const result = await pool.query(mainQuery, queryParams);
@@ -255,8 +262,10 @@ app.post('/api/auth/verify', authRateLimit, async (req, res) => {
 
 app.post('/api/personnel/all', async (req, res) => {
   try {
-    const { sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
-    
+    const { sortBy = 'name', sortOrder = 'asc' } = req.body;
+    const page = Math.max(1, parseInt(req.body.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.body.pageSize) || 20));
+
     // Get total count for pagination
     const countResult = await pool.query('SELECT COUNT(*) as count FROM personnel WHERE is_current = true');
     const totalCount = parseInt(countResult.rows[0].count) || 0;
@@ -298,21 +307,6 @@ app.post('/api/personnel/all', async (req, res) => {
   }
 });
 
-// Get single personnel by ID
-app.get('/api/personnel/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Personnel not found' });
-    }
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error fetching personnel by id:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // Search personnel with simple search term
 app.post('/api/personnel/search-simple', async (req, res) => {
   try {
@@ -348,7 +342,8 @@ app.post('/api/personnel/stats', async (req, res) => {
     const { type, filters = {} } = req.body;
     
     if (type === 'top-salaries') {
-      const { limit = 50, division, classification, sortBy = 'total_compensation' } = filters;
+      const { division, classification, sortBy = 'total_compensation' } = filters;
+      const limit = Math.min(500, Math.max(1, parseInt(filters.limit) || 50));
 
       let whereClause = 'is_current = true';
       const params = [];
@@ -364,9 +359,13 @@ app.post('/api/personnel/stats', async (req, res) => {
         params.push(classification);
       }
 
+      paramCount++;
+      params.push(limit);
+
       const query = `
         SELECT * FROM personnel
         WHERE ${whereClause}
+        LIMIT $${paramCount}
       `;
 
       const result = await pool.query(query, params);

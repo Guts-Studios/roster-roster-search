@@ -99,7 +99,7 @@ const ProfileDetails = () => {
   }
 
   const fullName = getFullName(person);
-  const initials = `${person.first_name[0]}${person.last_name[0]}`;
+  const initials = `${person.first_name?.[0] || ''}${person.last_name?.[0] || ''}`;
   // Production-safe currency formatting function
   const formatCurrency = (value: number | null | undefined): string => {
     if (value === null || value === undefined || isNaN(value) || value <= 0) {
@@ -222,37 +222,37 @@ const ProfileDetails = () => {
           {/* Personal Details Section */}
           {(person.gender || person.ethnicity || person.height || person.weight || person.year_of_hire) && (
             <div className="p-8 border-t border-gray-200">
-              <h3 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
+              <h2 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
                 Personal Details
-              </h3>
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {person.year_of_hire && (
                   <div className="border-l-4 border-black pl-6 py-2">
-                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Year of Hire</h2>
+                    <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Year of Hire</span>
                     <p className="text-xl font-bold text-black">{person.year_of_hire}</p>
                   </div>
                 )}
                 {person.gender && (
                   <div className="border-l-4 border-black pl-6 py-2">
-                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Gender</h2>
+                    <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Gender</span>
                     <p className="text-xl font-bold text-black">{person.gender}</p>
                   </div>
                 )}
                 {person.ethnicity && (
                   <div className="border-l-4 border-black pl-6 py-2">
-                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Ethnicity</h2>
+                    <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Ethnicity</span>
                     <p className="text-xl font-bold text-black">{person.ethnicity}</p>
                   </div>
                 )}
                 {person.height && (
                   <div className="border-l-4 border-black pl-6 py-2">
-                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Height</h2>
+                    <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Height</span>
                     <p className="text-xl font-bold text-black">{person.height}</p>
                   </div>
                 )}
                 {person.weight && (
                   <div className="border-l-4 border-black pl-6 py-2">
-                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Weight</h2>
+                    <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Weight</span>
                     <p className="text-xl font-bold text-black">{person.weight} lbs</p>
                   </div>
                 )}
@@ -267,57 +267,57 @@ const ProfileDetails = () => {
           
           {/* Enhanced Compensation Section */}
           <div className="p-8">
-            <h3 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
+            <h2 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
               Compensation Details
-            </h3>
+            </h2>
             <div className="flex flex-col gap-6">
-              {person.regular_pay && (
+              {person.regular_pay != null && Number(person.regular_pay) > 0 && (
                 <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Regular Pay</h2>
+                  <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Regular Pay</span>
                   <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.regular_pay)}
+                    {formatCurrency(Number(person.regular_pay))}
                   </p>
                 </div>
               )}
 
-              {person.overtime && person.overtime > 0 && (
+              {person.overtime != null && Number(person.overtime) > 0 && (
                 <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Overtime</h2>
+                  <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Overtime</span>
                   <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.overtime)}
+                    {formatCurrency(Number(person.overtime))}
                   </p>
                 </div>
               )}
 
-              {person.premiums && person.premiums > 0 && (
+              {person.premiums != null && Number(person.premiums) > 0 && (
                 <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Premiums</h2>
+                  <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Premiums</span>
                   <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.premiums)}
+                    {formatCurrency(Number(person.premiums))}
                   </p>
                 </div>
               )}
 
-              {person.health_dental_vision && person.health_dental_vision > 0 && (
+              {person.health_dental_vision != null && Number(person.health_dental_vision) > 0 && (
                 <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Health/Dental/Vision</h2>
+                  <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Health/Dental/Vision</span>
                   <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.health_dental_vision)}
+                    {formatCurrency(Number(person.health_dental_vision))}
                   </p>
                 </div>
               )}
 
-              {person.payout && person.payout > 0 && (
+              {person.payout != null && Number(person.payout) > 0 && (
                 <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Payout</h2>
+                  <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Payout</span>
                   <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.payout)}
+                    {formatCurrency(Number(person.payout))}
                   </p>
                 </div>
               )}
 
               <div className="border-l-4 border-black pl-6 py-2">
-                <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Total Compensation</h2>
+                <span className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Total Compensation</span>
                 <p className="text-3xl font-bold text-black">
                   {formattedCompensation}
                 </p>
