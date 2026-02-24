@@ -388,11 +388,19 @@ app.post('/api/personnel/stats', async (req, res) => {
   }
 });
 
-// Serve React app for all non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+// Serve React app for all non-API routes (not needed on Vercel)
+if (!process.env.VERCEL) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// Only start listener when running directly (not as Vercel serverless function)
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+// Export for Vercel serverless
+export default app;
