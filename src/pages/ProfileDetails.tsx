@@ -222,9 +222,6 @@ const ProfileDetails = () => {
           {/* Personal Details Section */}
           {(person.gender || person.ethnicity || person.height || person.weight || person.year_of_hire) && (
             <div className="p-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
-                Personal Details
-              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {person.year_of_hire && (
                   <div className="border-l-4 border-black pl-6 py-2">
@@ -262,13 +259,13 @@ const ProfileDetails = () => {
 
           {/* Data Disclaimer */}
           <div className="px-8 py-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-sm text-gray-600 text-center">Disclaimer: Roster data current as of {person.roster_year || 2024}. Payroll data current as of 2024.</p>
+            <p className="text-sm text-gray-600 text-center">Disclaimer: Payroll data is current as of late 2024.</p>
           </div>
           
           {/* Enhanced Compensation Section */}
           <div className="p-8">
             <h2 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
-              Compensation Details
+              Payment Information
             </h2>
             <div className="flex flex-col gap-6">
               {person.regular_pay != null && Number(person.regular_pay) > 0 && (
