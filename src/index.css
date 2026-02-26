@@ -54,94 +54,94 @@
 
 @layer base {
   :root {
-    /* Dark color scheme - #0A0A0A background, #FAF4E6 text */
-    --background: 0 0% 4%;
-    --foreground: 42 67% 94%;
+    /* Light scheme - #FFFFFF background, #0A0A0A text */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 42 67% 94%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 4%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 42 67% 94%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 4%;
 
-    --primary: 42 67% 94%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 42 67% 94%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 4%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 42 20% 65%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 42 67% 94%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 0 0% 4%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 42 67% 94%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 10%;
-    --ring: 42 67% 94%;
+    --border: 0 0% 85%;
+    --input: 0 0% 94%;
+    --ring: 0 0% 4%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 42 67% 94%;
-    --sidebar-primary: 42 67% 94%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 42 67% 94%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 42 67% 94%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 4%;
+    --sidebar-primary: 0 0% 4%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 0 0% 85%;
+    --sidebar-ring: 0 0% 4%;
 
-    /* Inadvertent theme colors - adapted for dark scheme */
-    --inadvertent-yellow: 42 67% 94%;
-    --inadvertent-yellow-hover: 42 67% 85%;
-    --inadvertent-cream: 0 0% 4%;
-    --inadvertent-dark-cream: 0 0% 8%;
-    --inadvertent-light-cream: 0 0% 12%;
-    --inadvertent-dark-text: 42 67% 94%;
-    --inadvertent-muted-text: 42 20% 65%;
+    /* Inadvertent theme colors - light scheme */
+    --inadvertent-yellow: 0 0% 4%;
+    --inadvertent-yellow-hover: 0 0% 15%;
+    --inadvertent-cream: 0 0% 100%;
+    --inadvertent-dark-cream: 0 0% 94%;
+    --inadvertent-light-cream: 0 0% 98%;
+    --inadvertent-dark-text: 0 0% 4%;
+    --inadvertent-muted-text: 0 0% 40%;
   }
 
   .dark {
-    /* Same as root - dark scheme is the default */
-    --background: 0 0% 4%;
-    --foreground: 42 67% 94%;
+    /* Same as root - light scheme is the default */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 42 67% 94%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 4%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 42 67% 94%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 4%;
 
-    --primary: 42 67% 94%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 42 67% 94%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 4%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 42 20% 65%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 42 67% 94%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 0 0% 4%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 42 67% 94%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 10%;
-    --ring: 42 67% 94%;
+    --border: 0 0% 85%;
+    --input: 0 0% 94%;
+    --ring: 0 0% 4%;
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 42 67% 94%;
-    --sidebar-primary: 42 67% 94%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 42 67% 94%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 42 67% 94%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 4%;
+    --sidebar-primary: 0 0% 4%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 0 0% 85%;
+    --sidebar-ring: 0 0% 4%;
   }
 }
 
@@ -182,7 +182,7 @@
   textarea,
   select,
   [role="combobox"] {
-    border: 2px solid #FAF4E6 !important;
+    border: 2px solid #0A0A0A !important;
   }
 
   /* Ensure focus states still work with black borders */
@@ -196,8 +196,8 @@
   textarea:focus,
   select:focus,
   [role="combobox"]:focus {
-    border: 2px solid #FAF4E6 !important;
-    ring-color: #FAF4E6;
+    border: 2px solid #0A0A0A !important;
+    ring-color: #0A0A0A;
   }
 
   /* Ensure hover states maintain black borders */
@@ -211,6 +211,6 @@
   textarea:hover,
   select:hover,
   [role="combobox"]:hover {
-    border: 2px solid #FAF4E6 !important;
+    border: 2px solid #0A0A0A !important;
   }
 }

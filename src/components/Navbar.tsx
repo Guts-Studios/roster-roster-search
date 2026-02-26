@@ -36,7 +36,7 @@ const Navbar = () => {
               <img
                 src="/logo/logo.webp"
                 alt="Logo"
-                className="h-10 w-auto object-contain hover:opacity-80 transition-opacity invert"
+                className="h-10 w-auto object-contain hover:opacity-80 transition-opacity"
               />
             </Link>
           </div>
