@@ -31,7 +31,7 @@ const Statistics = () => {
     sortBy: 'name',
     sortOrder: 'asc',
     page: 1,
-    pageSize: 25,
+    pageSize: 24,
   });
 
   // Only fetch search data when there are search criteria
@@ -76,7 +76,7 @@ const Statistics = () => {
           sortBy: 'name',
           sortOrder: 'asc',
           page: 1,
-          pageSize: 25,
+          pageSize: 24,
         });
       }
     }, 300); // 300ms debounce
@@ -119,7 +119,7 @@ const Statistics = () => {
       sortBy: 'name',
       sortOrder: 'asc',
       page: 1,
-      pageSize: 25,
+      pageSize: 24,
     });
   };
 

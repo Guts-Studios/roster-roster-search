@@ -83,7 +83,7 @@ export const useRosterUrlState = () => {
       lastName: getParam('lastName'),
       badgeNumber: getParam('badgeNumber'),
       page: parseInt(getParam('page', '1')) || 1,
-      pageSize: parseInt(getParam('pageSize', '25')) || 25,
+      pageSize: parseInt(getParam('pageSize', '24')) || 24,
       sortBy: getParam('sortBy', 'name') as 'name' | 'regular_pay' | 'overtime' | 'total_compensation',
       sortOrder: getParam('sortOrder', 'asc') as 'asc' | 'desc',
       source: getParam('source', 'search') // 'search' or 'roster'
@@ -123,7 +123,7 @@ export const useRosterUrlState = () => {
       if (currentState.lastName) params.set('lastName', currentState.lastName);
       if (currentState.badgeNumber) params.set('badgeNumber', currentState.badgeNumber);
       if (currentState.page > 1) params.set('page', String(currentState.page));
-      if (currentState.pageSize !== 25) params.set('pageSize', String(currentState.pageSize));
+      if (currentState.pageSize !== 24) params.set('pageSize', String(currentState.pageSize));
       if (currentState.sortBy !== 'name') params.set('sortBy', currentState.sortBy);
       if (currentState.sortOrder !== 'asc') params.set('sortOrder', currentState.sortOrder);
       if (currentState.source !== 'search') params.set('source', currentState.source);

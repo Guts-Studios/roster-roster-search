@@ -112,7 +112,7 @@ const Search = () => {
           sortBy: 'name',
           sortOrder: 'asc',
           page: 1,
-          pageSize: 25,
+          pageSize: 24,
         };
         setFilters(clearedFilters);
         // Clear URL state
@@ -190,7 +190,7 @@ const Search = () => {
       sortBy: 'name',
       sortOrder: 'asc',
       page: 1,
-      pageSize: 25,
+      pageSize: 24,
     };
     setFilters(clearedFilters);
     // Clear URL state
