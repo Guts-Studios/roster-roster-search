@@ -222,7 +222,7 @@ const Statistics = () => {
             <Button
               onClick={handleSearch}
               disabled={!searchQuery.trim()}
-              className="bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover px-6 py-3"
+              className="bg-foreground text-background hover:bg-foreground/90 px-6 py-3"
             >
               <SearchIcon className="h-5 w-5" />
             </Button>
