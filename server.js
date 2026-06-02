@@ -205,10 +205,12 @@ app.get('/api/personnel/yoy-changes', async (req, res) => {
   }
 });
 
-// Aggregate breakdowns by division and by classification (rank).
+// Aggregate breakdowns by division and by classification (rank). Restricted to
+// currently active personnel so departed officers' partial-year pay doesn't pull
+// the averages down.
 app.get('/api/personnel/breakdowns', async (req, res) => {
   try {
-    const r = await pool.query(`SELECT * FROM personnel WHERE ${VISIBLE_FILTER}`);
+    const r = await pool.query(`SELECT * FROM personnel WHERE ${VISIBLE_FILTER} AND is_active = true`);
     const sumComp = row => Number(row.regular_pay || 0) + Number(row.premiums || 0) +
                           Number(row.overtime || 0) + Number(row.payout || 0) +
                           Number(row.other_pay || 0) + Number(row.health_dental_vision || 0);
@@ -528,7 +530,11 @@ app.post('/api/personnel/stats', async (req, res) => {
       const { division, classification, sortBy = 'total_compensation' } = filters;
       const limit = Math.min(500, Math.max(1, parseInt(filters.limit) || 50));
 
-      let whereClause = VISIBLE_FILTER;
+      // Restrict to currently-active officers — ranking by pay should reflect
+      // current employees, not departed ones whose 2025 numbers are partial-year.
+      // Inactive personnel can still be searched and have profile pages; they're
+      // just excluded from the analytics rankings.
+      let whereClause = VISIBLE_FILTER + ' AND is_active = true';
       const params = [];
       let paramCount = 0;
 
@@ -542,12 +548,25 @@ app.post('/api/personnel/stats', async (req, res) => {
         params.push(classification);
       }
 
+      // ORDER BY based on requested sort — without this the endpoint returned
+      // arbitrary rows, which made the "Top 10 by Overtime" card show mostly
+      // $0 entries because only ~4 of the random 10 had non-zero OT.
+      // For total_compensation, sum the fields in SQL so we sort canonically.
+      const orderClauses = {
+        total_compensation: '(COALESCE(regular_pay,0)+COALESCE(premiums,0)+COALESCE(overtime,0)+COALESCE(payout,0)+COALESCE(other_pay,0)+COALESCE(health_dental_vision,0)) DESC',
+        regular_pay: 'regular_pay DESC NULLS LAST',
+        overtime: 'overtime DESC NULLS LAST',
+        premiums: 'premiums DESC NULLS LAST',
+      };
+      const orderBy = orderClauses[sortBy] || orderClauses.total_compensation;
+
       paramCount++;
       params.push(limit);
 
       const query = `
         SELECT * FROM personnel
         WHERE ${whereClause}
+        ORDER BY ${orderBy}
         LIMIT $${paramCount}
       `;
 
