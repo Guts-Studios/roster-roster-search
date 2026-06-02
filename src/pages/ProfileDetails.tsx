@@ -343,55 +343,74 @@ const ProfileDetails = () => {
             </div>
           </div>
 
-          {/* Pay History (year-over-year breakdown if we have multiple years) */}
-          {history && history.length > 1 && (
-            <div className="p-8 border-t border-border">
-              <h2 className="text-2xl font-bold text-foreground mb-6 border-b-2 border-foreground pb-3">
-                Pay History
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-muted-foreground uppercase tracking-wide text-xs border-b border-border">
-                      <th className="py-2 pr-4">Year</th>
-                      <th className="py-2 pr-4">Rank / Classification</th>
-                      <th className="py-2 pr-4 text-right">Regular Pay</th>
-                      <th className="py-2 pr-4 text-right">Overtime</th>
-                      <th className="py-2 pr-4 text-right">Other Pay</th>
-                      <th className="py-2 text-right">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {history.map((rec: Personnel) => {
-                      const total = getTotalCompensation(rec);
-                      return (
-                        <tr key={rec.id} className="border-b border-border/50">
-                          <td className="py-3 pr-4 font-semibold text-foreground">
-                            {rec.payroll_year || rec.roster_year || '—'}
-                          </td>
-                          <td className="py-3 pr-4 text-muted-foreground">
-                            {rec.rank_title || rec.classification || '—'}
-                          </td>
-                          <td className="py-3 pr-4 text-right text-foreground">
-                            {rec.regular_pay != null && Number(rec.regular_pay) > 0 ? formatCurrency(Number(rec.regular_pay)) : '—'}
-                          </td>
-                          <td className="py-3 pr-4 text-right text-foreground">
-                            {rec.overtime != null && Number(rec.overtime) > 0 ? formatCurrency(Number(rec.overtime)) : '—'}
-                          </td>
-                          <td className="py-3 pr-4 text-right text-foreground">
-                            {rec.other_pay != null && Number(rec.other_pay) > 0 ? formatCurrency(Number(rec.other_pay)) : '—'}
-                          </td>
-                          <td className="py-3 text-right font-bold text-foreground">
-                            {total > 0 ? formatCurrency(total) : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          {/* Pay History — one row per actual payroll year. Without dedupe by
+              payroll_year, the 2026 record (which carries forward 2025 payroll)
+              renders the same 2025 pay twice — once on its 2026 row and once on
+              the 2025 source row. We pick the latest roster_year representative
+              per payroll year so the row reflects the most current rank/division. */}
+          {(() => {
+            if (!history) return null;
+            const byPayYear = new Map<number, Personnel>();
+            for (const rec of history) {
+              if (!rec.payroll_year) continue;
+              const existing = byPayYear.get(rec.payroll_year);
+              if (!existing || (rec.roster_year || 0) > (existing.roster_year || 0)) {
+                byPayYear.set(rec.payroll_year, rec);
+              }
+            }
+            const dedupedHistory = [...byPayYear.values()].sort(
+              (a, b) => (b.payroll_year || 0) - (a.payroll_year || 0)
+            );
+            if (dedupedHistory.length <= 1) return null;
+            return (
+              <div className="p-8 border-t border-border">
+                <h2 className="text-2xl font-bold text-foreground mb-6 border-b-2 border-foreground pb-3">
+                  Pay History
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-muted-foreground uppercase tracking-wide text-xs border-b border-border">
+                        <th className="py-2 pr-4">Year</th>
+                        <th className="py-2 pr-4">Rank / Classification</th>
+                        <th className="py-2 pr-4 text-right">Regular Pay</th>
+                        <th className="py-2 pr-4 text-right">Overtime</th>
+                        <th className="py-2 pr-4 text-right">Other Pay</th>
+                        <th className="py-2 text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dedupedHistory.map((rec) => {
+                        const total = getTotalCompensation(rec);
+                        return (
+                          <tr key={rec.id} className="border-b border-border/50">
+                            <td className="py-3 pr-4 font-semibold text-foreground">
+                              {rec.payroll_year}
+                            </td>
+                            <td className="py-3 pr-4 text-muted-foreground">
+                              {rec.rank_title || rec.classification || '—'}
+                            </td>
+                            <td className="py-3 pr-4 text-right text-foreground">
+                              {rec.regular_pay != null && Number(rec.regular_pay) > 0 ? formatCurrency(Number(rec.regular_pay)) : '—'}
+                            </td>
+                            <td className="py-3 pr-4 text-right text-foreground">
+                              {rec.overtime != null && Number(rec.overtime) > 0 ? formatCurrency(Number(rec.overtime)) : '—'}
+                            </td>
+                            <td className="py-3 pr-4 text-right text-foreground">
+                              {rec.other_pay != null && Number(rec.other_pay) > 0 ? formatCurrency(Number(rec.other_pay)) : '—'}
+                            </td>
+                            <td className="py-3 text-right font-bold text-foreground">
+                              {total > 0 ? formatCurrency(total) : '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Misconduct Records — opens a Google Pinpoint search keyed by badge.
               Hidden until VITE_MISCONDUCT_BASE_URL is set in the deployment env. */}
