@@ -219,7 +219,13 @@ const Statistics = () => {
           </CardContent>
         </Card>
 
-        {/* Year-over-year change cards */}
+        {/* Year-over-year change cards. Restricted to officers still on the
+            January 2026 roster so partial-year pay (e.g., mid-year departures)
+            doesn't dominate the lists. */}
+        <p className="text-xs text-muted-foreground mb-2">
+          Year-over-year comparisons include only officers still on the January 2026 roster.
+          Officers who departed mid-year are excluded so partial-year payroll doesn't skew the list.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <Card className="bg-card border-border">
             <CardHeader>

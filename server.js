@@ -176,6 +176,12 @@ app.get('/api/personnel/yoy-changes', async (req, res) => {
       const y2024 = records.find(r => r.payroll_year === 2024);
       const y2025 = records.find(r => r.payroll_year === 2025);
       if (!y2024 || !y2025) continue;
+      // Only include personnel still active on the January 2026 roster. This filters
+      // out partial-year pay (e.g., officers who left mid-2025) from polluting the
+      // YoY change list with misleadingly large "decreases" that are actually
+      // departure payouts rather than real pay cuts.
+      const has2026 = records.some(r => r.roster_year === 2026);
+      if (!has2026) continue;
       const t24 = sumComp(y2024);
       const t25 = sumComp(y2025);
       if (t24 <= 0 || t25 <= 0) continue;
