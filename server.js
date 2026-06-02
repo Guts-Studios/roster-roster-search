@@ -158,7 +158,11 @@ app.get('/api/personnel/yoy-changes', async (req, res) => {
   try {
     const limit = Math.min(500, Math.max(1, parseInt(req.query.limit) || 50));
     const order = (req.query.order === 'asc') ? 'asc' : 'desc';
-    const all = await pool.query(`SELECT * FROM personnel WHERE last_name NOT LIKE 'XXXX%'`);
+    // Restrict to officers still active on the latest roster — is_active is set during
+    // Phase G of the migration based on whether the person's canonical-name group has
+    // a 2026 roster entry. Excludes departure payouts that would otherwise show as
+    // misleading "big decreases."
+    const all = await pool.query(`SELECT * FROM personnel WHERE last_name NOT LIKE 'XXXX%' AND is_active = true`);
     const sumComp = r => Number(r.regular_pay || 0) + Number(r.premiums || 0) +
                         Number(r.overtime || 0) + Number(r.payout || 0) +
                         Number(r.other_pay || 0) + Number(r.health_dental_vision || 0);
@@ -176,12 +180,6 @@ app.get('/api/personnel/yoy-changes', async (req, res) => {
       const y2024 = records.find(r => r.payroll_year === 2024);
       const y2025 = records.find(r => r.payroll_year === 2025);
       if (!y2024 || !y2025) continue;
-      // Only include personnel still active on the January 2026 roster. This filters
-      // out partial-year pay (e.g., officers who left mid-2025) from polluting the
-      // YoY change list with misleadingly large "decreases" that are actually
-      // departure payouts rather than real pay cuts.
-      const has2026 = records.some(r => r.roster_year === 2026);
-      if (!has2026) continue;
       const t24 = sumComp(y2024);
       const t25 = sumComp(y2025);
       if (t24 <= 0 || t25 <= 0) continue;

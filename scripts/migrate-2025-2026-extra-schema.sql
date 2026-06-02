@@ -23,6 +23,13 @@ ALTER TABLE personnel ADD COLUMN IF NOT EXISTS is_current BOOLEAN DEFAULT false;
 ALTER TABLE personnel ADD COLUMN IF NOT EXISTS rank_title TEXT;
 ALTER TABLE personnel ADD COLUMN IF NOT EXISTS payroll_year INTEGER;
 
+-- Active-status flag: TRUE if any record in this person's canonical-name group
+-- has a 2026 roster entry. Populated during Phase E of the data migration so
+-- every record (historical and current) reflects the same person's current
+-- employment status. Lets callers filter "still employed by SAPD" without
+-- inferring it from cross-row lookups.
+ALTER TABLE personnel ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT false;
+
 -- Phase 4: Backfill existing records as 2024 historical baseline.
 -- Anything still untagged is part of the original 2024 SAPD roster import. Set
 -- roster_year=2024 unconditionally, but stamp payroll_year=2024 ONLY when at
@@ -68,6 +75,7 @@ END $$;
 -- Phase 6: Indexes for the latest-per-person query and year filtering.
 CREATE INDEX IF NOT EXISTS idx_personnel_roster_year ON personnel(roster_year);
 CREATE INDEX IF NOT EXISTS idx_personnel_is_current ON personnel(is_current);
+CREATE INDEX IF NOT EXISTS idx_personnel_is_active ON personnel(is_active);
 CREATE INDEX IF NOT EXISTS idx_personnel_name_year
   ON personnel (LOWER(last_name), LOWER(first_name), roster_year DESC);
 

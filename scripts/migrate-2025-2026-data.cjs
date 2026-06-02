@@ -563,6 +563,39 @@ async function migrate() {
       console.log('\nPhase F: applied display tweaks (Ruelas nickname display, ' + ruelasUpdate.rowCount + ' row)');
     }
 
+    // ---- Phase G: populate is_active flag ----
+    // A record is "active" if any record sharing its canonical-name group has a
+    // 2026 roster entry. This makes "currently employed by SAPD" a single-column
+    // filter instead of an inferred join. Redacted REDACTED-NNN records are
+    // active iff their own row is roster_year=2026.
+    const activeNames = new Set();
+    const allForActive = await client.query(`SELECT id, last_name, first_name, roster_year FROM personnel`);
+    for (const row of allForActive.rows) {
+      if (row.roster_year !== 2026) continue;
+      if (!row.last_name || /^X+$/i.test(row.last_name.replace(/\s+/g, ''))) continue;
+      activeNames.add(canonicalNameKey(row.last_name, row.first_name));
+      activeNames.add(shortCanonicalNameKey(row.last_name, row.first_name));
+    }
+
+    const activeIds = [];
+    const inactiveIds = [];
+    for (const row of allForActive.rows) {
+      const isRedacted = /^X+$/i.test((row.last_name || '').replace(/\s+/g, ''));
+      const active = isRedacted
+        ? row.roster_year === 2026
+        : (activeNames.has(canonicalNameKey(row.last_name, row.first_name)) ||
+           activeNames.has(shortCanonicalNameKey(row.last_name, row.first_name)));
+      (active ? activeIds : inactiveIds).push(row.id);
+    }
+    if (activeIds.length) {
+      await client.query('UPDATE personnel SET is_active = true WHERE id = ANY($1::uuid[])', [activeIds]);
+    }
+    if (inactiveIds.length) {
+      await client.query('UPDATE personnel SET is_active = false WHERE id = ANY($1::uuid[])', [inactiveIds]);
+    }
+    console.log('\nPhase G: marked ' + activeIds.length + ' rows is_active=true, ' +
+                inactiveIds.length + ' rows is_active=false');
+
     // ---- Verification ----
     const summary = await client.query(`
       SELECT roster_year, is_current, COUNT(*)::int AS count

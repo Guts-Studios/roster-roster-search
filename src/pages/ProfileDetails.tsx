@@ -160,8 +160,20 @@ const ProfileDetails = () => {
               
               {/* Enhanced Personnel Information */}
               <div className="flex flex-col items-center lg:items-start flex-1 space-y-6">
-                <h1 className="text-4xl lg:text-5xl font-bold text-foreground text-center lg:text-left leading-tight">{fullName}</h1>
-                
+                <div className="flex flex-col items-center lg:items-start gap-3">
+                  <h1 className="text-4xl lg:text-5xl font-bold text-foreground text-center lg:text-left leading-tight">{fullName}</h1>
+                  {person.is_active === false && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-muted text-muted-foreground border border-border">
+                      Departed
+                    </span>
+                  )}
+                  {person.is_active === true && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-green-100 text-green-800 border border-green-200">
+                      Active
+                    </span>
+                  )}
+                </div>
+
                 {/* Enhanced Personnel Information - Clean Layout */}
                 <div className="flex flex-col gap-3 w-full max-w-md text-center lg:text-left">
                   {(person.rank_title || person.classification) && (
