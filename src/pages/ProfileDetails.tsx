@@ -2,14 +2,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePersonnelById } from "../hooks/usePersonnel";
-import { getFullName, getTotalCompensation, formatHeight } from "../types";
+import { usePayHistory } from "../hooks/usePersonnelStats";
+import { getFullName, getTotalCompensation, formatHeight, Personnel } from "../types";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, DollarSign, X, ZoomIn } from "lucide-react";
+import { ArrowLeft, Shield, DollarSign, X, ZoomIn, FileSearch } from "lucide-react";
 import { getPhotoUrlVariations } from "@/utils/photoUtils";
 import { useRosterUrlState } from "../hooks/useUrlState";
+
+// Misconduct Records button — feature-flagged. Set VITE_MISCONDUCT_BASE_URL in
+// the deployment environment when Ben publishes the Google Pinpoint collection
+// and the button will render on profiles that have a badge number. The badge is
+// appended as a search query.
+const MISCONDUCT_BASE_URL = import.meta.env.VITE_MISCONDUCT_BASE_URL || '';
 
 // Hoisted outside the component: constructing Intl.NumberFormat is ~10-50x slower than .format().
 const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
@@ -22,6 +29,7 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
 const ProfileDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { data: person, isLoading, error } = usePersonnelById(id || "");
+  const { data: history } = usePayHistory(id || "");
   const [isImageZoomed, setIsImageZoomed] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const { getReturnPath } = useRosterUrlState();
@@ -322,6 +330,75 @@ const ProfileDetails = () => {
               </div>
             </div>
           </div>
+
+          {/* Pay History (year-over-year breakdown if we have multiple years) */}
+          {history && history.length > 1 && (
+            <div className="p-8 border-t border-border">
+              <h2 className="text-2xl font-bold text-foreground mb-6 border-b-2 border-foreground pb-3">
+                Pay History
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground uppercase tracking-wide text-xs border-b border-border">
+                      <th className="py-2 pr-4">Year</th>
+                      <th className="py-2 pr-4">Rank / Classification</th>
+                      <th className="py-2 pr-4 text-right">Regular Pay</th>
+                      <th className="py-2 pr-4 text-right">Overtime</th>
+                      <th className="py-2 pr-4 text-right">Other Pay</th>
+                      <th className="py-2 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map((rec: Personnel) => {
+                      const total = getTotalCompensation(rec);
+                      return (
+                        <tr key={rec.id} className="border-b border-border/50">
+                          <td className="py-3 pr-4 font-semibold text-foreground">
+                            {rec.payroll_year || rec.roster_year || '—'}
+                          </td>
+                          <td className="py-3 pr-4 text-muted-foreground">
+                            {rec.rank_title || rec.classification || '—'}
+                          </td>
+                          <td className="py-3 pr-4 text-right text-foreground">
+                            {rec.regular_pay != null && Number(rec.regular_pay) > 0 ? formatCurrency(Number(rec.regular_pay)) : '—'}
+                          </td>
+                          <td className="py-3 pr-4 text-right text-foreground">
+                            {rec.overtime != null && Number(rec.overtime) > 0 ? formatCurrency(Number(rec.overtime)) : '—'}
+                          </td>
+                          <td className="py-3 pr-4 text-right text-foreground">
+                            {rec.other_pay != null && Number(rec.other_pay) > 0 ? formatCurrency(Number(rec.other_pay)) : '—'}
+                          </td>
+                          <td className="py-3 text-right font-bold text-foreground">
+                            {total > 0 ? formatCurrency(total) : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Misconduct Records — opens a Google Pinpoint search keyed by badge.
+              Hidden until VITE_MISCONDUCT_BASE_URL is set in the deployment env. */}
+          {MISCONDUCT_BASE_URL && person.badge_number && !/^X+$/i.test(person.last_name || '') && (
+            <div className="p-8 border-t border-border">
+              <a
+                href={`${MISCONDUCT_BASE_URL}${MISCONDUCT_BASE_URL.includes('?') ? '&' : '?'}q=${encodeURIComponent(person.badge_number)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90 px-6 py-3 rounded-md font-medium transition-colors"
+              >
+                <FileSearch size={20} />
+                Search Misconduct Records
+              </a>
+              <p className="text-xs text-muted-foreground mt-3">
+                Opens a Google Pinpoint search for badge #{person.badge_number}.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

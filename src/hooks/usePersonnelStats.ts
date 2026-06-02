@@ -9,6 +9,55 @@ export interface StatsFilters {
   sortBy: 'total_compensation' | 'regular_pay' | 'overtime' | 'premiums';
 }
 
+export interface YoYChange {
+  id: string;
+  first_name: string;
+  last_name: string;
+  badge_number: string | null;
+  classification: string | null;
+  division: string | null;
+  total_2024: number;
+  total_2025: number;
+  delta: number;
+  delta_pct: number;
+}
+
+export interface BreakdownRow {
+  name: string;
+  count: number;
+  total: number;
+  avg: number;
+}
+
+export const usePayHistory = (id: string) => {
+  return useQuery({
+    queryKey: ["personnel", id, "history"],
+    queryFn: async (): Promise<Personnel[]> => {
+      if (!id) return [];
+      return await api.queryMany<Personnel>(`/personnel/${id}/history`);
+    },
+    enabled: !!id,
+  });
+};
+
+export const useYoYChanges = (limit = 25, order: 'asc' | 'desc' = 'desc') => {
+  return useQuery({
+    queryKey: ["personnel-yoy", limit, order],
+    queryFn: async (): Promise<YoYChange[]> => {
+      return await api.queryMany<YoYChange>(`/personnel/yoy-changes?limit=${limit}&order=${order}`);
+    },
+  });
+};
+
+export const useBreakdowns = () => {
+  return useQuery({
+    queryKey: ["personnel-breakdowns"],
+    queryFn: async (): Promise<{ byDivision: BreakdownRow[]; byRank: BreakdownRow[] }> => {
+      return await api.queryOne(`/personnel/breakdowns`) as { byDivision: BreakdownRow[]; byRank: BreakdownRow[] };
+    },
+  });
+};
+
 export const useTopSalaries = (filters: StatsFilters) => {
   return useQuery({
     queryKey: ["personnel-stats", "top-salaries", filters],

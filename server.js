@@ -90,6 +90,53 @@ app.use(express.static(path.join(__dirname, 'dist')));
 // lookups by id still resolve so deep links keep working.
 const VISIBLE_FILTER = "is_current = true AND last_name NOT LIKE 'XXXX%'";
 
+// Canonical-name helpers — mirror scripts/migrate-2025-2026-data.cjs so the
+// history endpoint groups records the same way Phase E groups them.
+const NICKNAME_TO_CANONICAL = {
+  dan: 'daniel', danny: 'daniel', daniel: 'daniel',
+  rob: 'robert', bob: 'robert', bobby: 'robert', robert: 'robert',
+  bill: 'william', will: 'william', willie: 'william', william: 'william',
+  rick: 'richard', ricky: 'richard', dick: 'richard', richard: 'richard',
+  mike: 'michael', mikey: 'michael', michael: 'michael',
+  chris: 'christopher', christopher: 'christopher',
+  matt: 'matthew', matty: 'matthew', matthew: 'matthew',
+  tony: 'anthony', anthony: 'anthony',
+  jim: 'james', jimmy: 'james', james: 'james',
+  joe: 'joseph', joey: 'joseph', joseph: 'joseph',
+  tom: 'thomas', tommy: 'thomas', thomas: 'thomas',
+  andy: 'andrew', drew: 'andrew', andrew: 'andrew',
+  jerry: 'gerald', gerald: 'gerald',
+  steve: 'steven', stevie: 'steven', steven: 'steven', stephen: 'steven',
+  pete: 'peter', peter: 'peter',
+  ed: 'edward', eddie: 'edward', edward: 'edward',
+  alex: 'alexander', alexander: 'alexander',
+  nick: 'nicholas', nicky: 'nicholas', nicholas: 'nicholas',
+  zach: 'zachary', zack: 'zachary', zachary: 'zachary',
+  ben: 'benjamin', benji: 'benjamin', benjamin: 'benjamin',
+  sam: 'samuel', sammy: 'samuel', samuel: 'samuel',
+  greg: 'gregory', gregory: 'gregory',
+  larry: 'lawrence', lawrence: 'lawrence',
+  charlie: 'charles', chuck: 'charles', charles: 'charles',
+};
+const SURNAME_PARTICLES = new Set(['de', 'del', 'la', 'las', 'los', 'van', 'von', 'der', 'di', 'da', 'el', 'do', 'le', 'mac', 'mc']);
+const NAME_SUFFIX_RE = /\s+(jr\.?|junior|sr\.?|senior|i{1,3}|iv|2nd|3rd|4th)$/i;
+const norm = s => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const stripSuffix = s => norm(s).replace(NAME_SUFFIX_RE, '');
+const canonicalNameKey = (last, first) => {
+  const ln = stripSuffix(last);
+  let fn = stripSuffix(first).replace(/\s+[a-z]\.?$/i, '');
+  if (NICKNAME_TO_CANONICAL[fn]) fn = NICKNAME_TO_CANONICAL[fn];
+  return ln + '|' + fn;
+};
+const shortCanonicalNameKey = (last, first) => {
+  let ln = stripSuffix(last);
+  const parts = ln.split(/\s+/);
+  if (parts.length > 1 && !SURNAME_PARTICLES.has(parts[0])) ln = parts[0];
+  let fn = stripSuffix(first).replace(/\s+[a-z]\.?$/i, '');
+  if (NICKNAME_TO_CANONICAL[fn]) fn = NICKNAME_TO_CANONICAL[fn];
+  return ln + '|' + fn;
+};
+
 // API Routes
 app.get('/api/personnel', async (req, res) => {
   try {
@@ -111,6 +158,121 @@ app.get('/api/personnel/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching personnel by id:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Pay history for a single person — finds all records across years that match
+// the same person via badge OR canonical name OR short canonical name.
+app.get('/api/personnel/:id/history', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const all = await pool.query('SELECT * FROM personnel');
+    const target = all.rows.find(r => r.id === id);
+    if (!target) return res.status(404).json({ error: 'Personnel not found' });
+
+    const targetCanon = canonicalNameKey(target.last_name, target.first_name);
+    const targetShort = shortCanonicalNameKey(target.last_name, target.first_name);
+    const isRedactedTarget = /^X+$/i.test((target.last_name || '').replace(/\s+/g, ''));
+
+    const matches = all.rows.filter(r => {
+      if (r.id === target.id) return true;
+      // Redacted records: only match by the exact REDACTED-NNN badge (each is its
+      // own anonymous identity; canonical name "xxxxxxx|xxxxxxx" would collapse them all).
+      if (isRedactedTarget) return r.badge_number === target.badge_number && target.badge_number != null;
+      if (target.badge_number && r.badge_number === target.badge_number) return true;
+      const c = canonicalNameKey(r.last_name, r.first_name);
+      const s = shortCanonicalNameKey(r.last_name, r.first_name);
+      return c === targetCanon || s === targetShort;
+    });
+
+    matches.sort((a, b) => (b.roster_year || 0) - (a.roster_year || 0));
+    res.json(matches);
+  } catch (error) {
+    console.error('Error fetching personnel history:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Year-over-year compensation changes. Joins current 2025 and 2024 records by
+// canonical name; reports each person's deltas, sortable by largest gain/loss.
+app.get('/api/personnel/yoy-changes', async (req, res) => {
+  try {
+    const limit = Math.min(500, Math.max(1, parseInt(req.query.limit) || 50));
+    const order = (req.query.order === 'asc') ? 'asc' : 'desc';
+    const all = await pool.query(`SELECT * FROM personnel WHERE last_name NOT LIKE 'XXXX%'`);
+    const sumComp = r => Number(r.regular_pay || 0) + Number(r.premiums || 0) +
+                        Number(r.overtime || 0) + Number(r.payout || 0) +
+                        Number(r.other_pay || 0) + Number(r.health_dental_vision || 0);
+
+    // Group all records by canonical name; for each person, find their 2024 and 2025 totals.
+    const byPerson = new Map();
+    for (const r of all.rows) {
+      const k = canonicalNameKey(r.last_name, r.first_name);
+      if (!byPerson.has(k)) byPerson.set(k, []);
+      byPerson.get(k).push(r);
+    }
+
+    const changes = [];
+    for (const [, records] of byPerson) {
+      const y2024 = records.find(r => r.payroll_year === 2024);
+      const y2025 = records.find(r => r.payroll_year === 2025);
+      if (!y2024 || !y2025) continue;
+      const t24 = sumComp(y2024);
+      const t25 = sumComp(y2025);
+      if (t24 <= 0 || t25 <= 0) continue;
+      const display = records.find(r => r.is_current) || y2025 || y2024;
+      changes.push({
+        id: display.id,
+        first_name: display.first_name,
+        last_name: display.last_name,
+        badge_number: display.badge_number,
+        classification: display.classification,
+        division: display.division,
+        total_2024: t24,
+        total_2025: t25,
+        delta: t25 - t24,
+        delta_pct: t24 > 0 ? ((t25 - t24) / t24) * 100 : 0,
+      });
+    }
+    changes.sort((a, b) => order === 'asc' ? a.delta - b.delta : b.delta - a.delta);
+    res.json(changes.slice(0, limit));
+  } catch (error) {
+    console.error('Error fetching YoY changes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Aggregate breakdowns by division and by classification (rank).
+app.get('/api/personnel/breakdowns', async (req, res) => {
+  try {
+    const r = await pool.query(`SELECT * FROM personnel WHERE ${VISIBLE_FILTER}`);
+    const sumComp = row => Number(row.regular_pay || 0) + Number(row.premiums || 0) +
+                          Number(row.overtime || 0) + Number(row.payout || 0) +
+                          Number(row.other_pay || 0) + Number(row.health_dental_vision || 0);
+
+    const division = new Map();
+    const rank = new Map();
+    for (const row of r.rows) {
+      if (row.division) {
+        const d = division.get(row.division) || { name: row.division, count: 0, total: 0 };
+        d.count++;
+        d.total += sumComp(row);
+        division.set(row.division, d);
+      }
+      if (row.classification) {
+        const c = rank.get(row.classification) || { name: row.classification, count: 0, total: 0 };
+        c.count++;
+        c.total += sumComp(row);
+        rank.set(row.classification, c);
+      }
+    }
+    const toRows = m => [...m.values()].map(v => ({ ...v, avg: v.count > 0 ? v.total / v.count : 0 }));
+    const byDivision = toRows(division).sort((a, b) => b.total - a.total);
+    const byRank = toRows(rank).sort((a, b) => b.avg - a.avg);
+    res.json({ byDivision, byRank });
+  } catch (error) {
+    console.error('Error fetching breakdowns:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
