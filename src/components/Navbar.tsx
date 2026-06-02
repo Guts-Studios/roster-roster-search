@@ -20,6 +20,7 @@ const Navbar = () => {
 
   const navItems = [
     { to: "/", icon: Search, label: "Public Records" },
+    { to: "/statistics", icon: BarChart3, label: "Data" },
     { to: "/about", icon: Info, label: "About" },
   ];
 
