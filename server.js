@@ -148,51 +148,9 @@ app.get('/api/personnel', async (req, res) => {
   }
 });
 
-app.get('/api/personnel/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Personnel not found' });
-    }
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error fetching personnel by id:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Pay history for a single person — finds all records across years that match
-// the same person via badge OR canonical name OR short canonical name.
-app.get('/api/personnel/:id/history', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const all = await pool.query('SELECT * FROM personnel');
-    const target = all.rows.find(r => r.id === id);
-    if (!target) return res.status(404).json({ error: 'Personnel not found' });
-
-    const targetCanon = canonicalNameKey(target.last_name, target.first_name);
-    const targetShort = shortCanonicalNameKey(target.last_name, target.first_name);
-    const isRedactedTarget = /^X+$/i.test((target.last_name || '').replace(/\s+/g, ''));
-
-    const matches = all.rows.filter(r => {
-      if (r.id === target.id) return true;
-      // Redacted records: only match by the exact REDACTED-NNN badge (each is its
-      // own anonymous identity; canonical name "xxxxxxx|xxxxxxx" would collapse them all).
-      if (isRedactedTarget) return r.badge_number === target.badge_number && target.badge_number != null;
-      if (target.badge_number && r.badge_number === target.badge_number) return true;
-      const c = canonicalNameKey(r.last_name, r.first_name);
-      const s = shortCanonicalNameKey(r.last_name, r.first_name);
-      return c === targetCanon || s === targetShort;
-    });
-
-    matches.sort((a, b) => (b.roster_year || 0) - (a.roster_year || 0));
-    res.json(matches);
-  } catch (error) {
-    console.error('Error fetching personnel history:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// IMPORTANT: specific routes (yoy-changes, breakdowns) must be registered BEFORE
+// the parameterized /api/personnel/:id route below. Otherwise Express matches
+// :id = "yoy-changes" and tries to look it up as an ID, returning 404.
 
 // Year-over-year compensation changes. Joins current 2025 and 2024 records by
 // canonical name; reports each person's deltas, sortable by largest gain/loss.
@@ -273,6 +231,59 @@ app.get('/api/personnel/breakdowns', async (req, res) => {
     res.json({ byDivision, byRank });
   } catch (error) {
     console.error('Error fetching breakdowns:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Parameterized routes registered LAST so they don't shadow the named routes above.
+// The :id pattern is constrained to UUID format as a guard against accidental
+// shadowing of any future /api/personnel/* named route.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+app.get('/api/personnel/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!UUID_RE.test(id)) return res.status(404).json({ error: 'Personnel not found' });
+    const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Personnel not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching personnel by id:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Pay history for a single person — finds all records across years that match
+// the same person via badge OR canonical name OR short canonical name.
+app.get('/api/personnel/:id/history', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!UUID_RE.test(id)) return res.status(404).json({ error: 'Personnel not found' });
+    const all = await pool.query('SELECT * FROM personnel');
+    const target = all.rows.find(r => r.id === id);
+    if (!target) return res.status(404).json({ error: 'Personnel not found' });
+
+    const targetCanon = canonicalNameKey(target.last_name, target.first_name);
+    const targetShort = shortCanonicalNameKey(target.last_name, target.first_name);
+    const isRedactedTarget = /^X+$/i.test((target.last_name || '').replace(/\s+/g, ''));
+
+    const matches = all.rows.filter(r => {
+      if (r.id === target.id) return true;
+      // Redacted records: only match by the exact REDACTED-NNN badge (each is its
+      // own anonymous identity; canonical name "xxxxxxx|xxxxxxx" would collapse them all).
+      if (isRedactedTarget) return r.badge_number === target.badge_number && target.badge_number != null;
+      if (target.badge_number && r.badge_number === target.badge_number) return true;
+      const c = canonicalNameKey(r.last_name, r.first_name);
+      const s = shortCanonicalNameKey(r.last_name, r.first_name);
+      return c === targetCanon || s === targetShort;
+    });
+
+    matches.sort((a, b) => (b.roster_year || 0) - (a.roster_year || 0));
+    res.json(matches);
+  } catch (error) {
+    console.error('Error fetching personnel history:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

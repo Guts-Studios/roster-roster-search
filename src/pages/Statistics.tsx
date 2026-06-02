@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -43,18 +42,22 @@ const HISTOGRAM_BUCKETS = [
   { min: 300000, max: Infinity, label: '$300k+' },
 ];
 
+const PAGE_SIZE = 10;
+
 const Statistics = () => {
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<StatsFilters>({
-    limit: 25,
+    // Fetch a larger window so paging stays client-side and snappy.
+    limit: 100,
     sortBy: 'total_compensation',
   });
 
   const { data: topSalaries, isLoading: loadingTop } = useTopSalaries(filters);
   const { data: overtimeLeaders, isLoading: loadingOT } = useTopSalaries({ limit: 10, sortBy: 'overtime' });
   const { data: aggregates } = usePersonnelAggregates();
-  const { data: yoyTop } = useYoYChanges(10, 'desc');
-  const { data: yoyBottom } = useYoYChanges(10, 'asc');
-  const { data: breakdowns } = useBreakdowns();
+  const { data: yoyTop, isLoading: loadingYoyTop } = useYoYChanges(10, 'desc');
+  const { data: yoyBottom, isLoading: loadingYoyBottom } = useYoYChanges(10, 'asc');
+  const { data: breakdowns, isLoading: loadingBreakdowns } = useBreakdowns();
   const { data: allCurrent } = useTopSalaries({ limit: 500, sortBy: 'total_compensation' });
 
   // Compute histogram client-side from all current personnel.
@@ -81,6 +84,14 @@ const Statistics = () => {
       return Number(b[key] || 0) - Number(a[key] || 0);
     });
   }, [topSalaries, filters.sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedTop.length / PAGE_SIZE));
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const pageRows = sortedTop.slice(pageStart, pageStart + PAGE_SIZE);
+  const onSortChange = (sortBy: StatsFilters['sortBy']) => {
+    setFilters(prev => ({ ...prev, sortBy }));
+    setPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,70 +139,82 @@ const Statistics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <Label htmlFor="sortBy" className="text-foreground">Rank by</Label>
-                <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as StatsFilters['sortBy'] }))}>
-                  <SelectTrigger className="mt-1 bg-input border-border text-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="total_compensation">Total Compensation</SelectItem>
-                    <SelectItem value="regular_pay">Regular Pay</SelectItem>
-                    <SelectItem value="overtime">Overtime</SelectItem>
-                    <SelectItem value="premiums">Premiums</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="limit" className="text-foreground">Show top</Label>
-                <Input
-                  id="limit"
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={filters.limit}
-                  onChange={(e) => setFilters(prev => ({ ...prev, limit: parseInt(e.target.value) || 25 }))}
-                  className="mt-1 bg-input border-border text-foreground"
-                />
-              </div>
+            <div className="mb-4 max-w-xs">
+              <Label htmlFor="sortBy" className="text-foreground">Rank by</Label>
+              <Select value={filters.sortBy} onValueChange={(value) => onSortChange(value as StatsFilters['sortBy'])}>
+                <SelectTrigger className="mt-1 bg-input border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="total_compensation">Total Compensation</SelectItem>
+                  <SelectItem value="regular_pay">Regular Pay</SelectItem>
+                  <SelectItem value="overtime">Overtime</SelectItem>
+                  <SelectItem value="premiums">Premiums</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {loadingTop ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-inadvertent-yellow"></div>
               </div>
             ) : (
-              <div className="space-y-2">
-                {sortedTop.map((person, index) => {
-                  const value = filters.sortBy === 'total_compensation'
-                    ? getTotalCompensation(person)
-                    : Number(person[filters.sortBy as keyof Personnel] || 0);
-                  return (
-                    <Link key={person.id} to={`/profile/${person.id}`}>
-                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center border-border flex-shrink-0">
-                            {index + 1}
-                          </Badge>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-foreground truncate">{getFullName(person)}</p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {[person.classification, person.division].filter(Boolean).join(' • ')}
-                            </p>
-                            {person.badge_number && (
-                              <p className="text-xs text-muted-foreground">Badge #{person.badge_number}</p>
-                            )}
+              <>
+                <div className="space-y-2">
+                  {pageRows.map((person, index) => {
+                    const value = filters.sortBy === 'total_compensation'
+                      ? getTotalCompensation(person)
+                      : Number(person[filters.sortBy as keyof Personnel] || 0);
+                    return (
+                      <Link key={person.id} to={`/profile/${person.id}`}>
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center border-border flex-shrink-0">
+                              {pageStart + index + 1}
+                            </Badge>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-foreground truncate">{getFullName(person)}</p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {[person.classification, person.division].filter(Boolean).join(' • ')}
+                              </p>
+                              {person.badge_number && (
+                                <p className="text-xs text-muted-foreground">Badge #{person.badge_number}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0 ml-3">
+                            <p className="font-bold text-foreground">{fmtUsd(value)}</p>
+                            <p className="text-xs text-muted-foreground">{SORT_LABELS[filters.sortBy || 'total_compensation']}</p>
                           </div>
                         </div>
-                        <div className="text-right flex-shrink-0 ml-3">
-                          <p className="font-bold text-foreground">{fmtUsd(value)}</p>
-                          <p className="text-xs text-muted-foreground">{SORT_LABELS[filters.sortBy || 'total_compensation']}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                {/* Pagination controls — only shown when more than one page exists */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4 text-sm">
+                    <button
+                      type="button"
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="px-3 py-1 rounded border border-border text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
+                    >
+                      Previous
+                    </button>
+                    <div className="text-muted-foreground">
+                      Page {page} of {totalPages} · Ranks {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, sortedTop.length)} of {sortedTop.length}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="px-3 py-1 rounded border border-border text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -206,7 +229,7 @@ const Statistics = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <YoYList rows={yoyTop} kind="increase" />
+              <YoYList rows={yoyTop} kind="increase" loading={loadingYoyTop} />
             </CardContent>
           </Card>
           <Card className="bg-card border-border">
@@ -217,7 +240,7 @@ const Statistics = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <YoYList rows={yoyBottom} kind="decrease" />
+              <YoYList rows={yoyBottom} kind="decrease" loading={loadingYoyBottom} />
             </CardContent>
           </Card>
         </div>
@@ -269,7 +292,7 @@ const Statistics = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <BreakdownTable rows={breakdowns?.byDivision || []} valueKey="total" valueLabel="Total" />
+              <BreakdownTable rows={breakdowns?.byDivision || []} valueKey="total" valueLabel="Total" loading={loadingBreakdowns} />
             </CardContent>
           </Card>
           <Card className="bg-card border-border">
@@ -280,7 +303,7 @@ const Statistics = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <BreakdownTable rows={breakdowns?.byRank || []} valueKey="avg" valueLabel="Avg" />
+              <BreakdownTable rows={breakdowns?.byRank || []} valueKey="avg" valueLabel="Avg" loading={loadingBreakdowns} />
             </CardContent>
           </Card>
         </div>
@@ -317,9 +340,9 @@ const Statistics = () => {
   );
 };
 
-const YoYList: React.FC<{ rows: YoYChange[] | undefined; kind: 'increase' | 'decrease' }> = ({ rows, kind }) => {
-  if (!rows) return <div className="text-sm text-muted-foreground">Loading…</div>;
-  if (rows.length === 0) return <div className="text-sm text-muted-foreground">No data available.</div>;
+const YoYList: React.FC<{ rows: YoYChange[] | undefined; kind: 'increase' | 'decrease'; loading?: boolean }> = ({ rows, kind, loading }) => {
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (!rows || rows.length === 0) return <div className="text-sm text-muted-foreground">No data available.</div>;
   return (
     <div className="space-y-2">
       {rows.map((r) => (
@@ -344,8 +367,9 @@ const YoYList: React.FC<{ rows: YoYChange[] | undefined; kind: 'increase' | 'dec
   );
 };
 
-const BreakdownTable: React.FC<{ rows: BreakdownRow[]; valueKey: 'total' | 'avg'; valueLabel: string }> = ({ rows, valueKey, valueLabel }) => {
-  if (rows.length === 0) return <div className="text-sm text-muted-foreground">Loading…</div>;
+const BreakdownTable: React.FC<{ rows: BreakdownRow[]; valueKey: 'total' | 'avg'; valueLabel: string; loading?: boolean }> = ({ rows, valueKey, valueLabel, loading }) => {
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (rows.length === 0) return <div className="text-sm text-muted-foreground">No data available.</div>;
   return (
     <table className="w-full text-sm">
       <thead>
@@ -356,7 +380,7 @@ const BreakdownTable: React.FC<{ rows: BreakdownRow[]; valueKey: 'total' | 'avg'
         </tr>
       </thead>
       <tbody>
-        {rows.slice(0, 15).map((r) => (
+        {rows.slice(0, 10).map((r) => (
           <tr key={r.name} className="border-b border-border/40">
             <td className="py-2 pr-2 text-foreground">{r.name}</td>
             <td className="py-2 text-right text-muted-foreground">{r.count}</td>
