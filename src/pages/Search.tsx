@@ -228,9 +228,13 @@ const Search = () => {
 
   // Main search interface
   return (
-    <div className="min-h-screen bg-background">
+    // Intentionally not min-h-screen here: when there's no active search, the page
+    // collapses to content height so the footer sits just below the search bar
+    // instead of leaving a tall gap. App.tsx's flex layout still pushes the footer
+    // to the bottom on longer pages (e.g., when search results render below).
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-4 sm:py-6">
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">No Secret Police</h1>
           <p className="text-lg text-muted-foreground">A public records database by Inadvertent.</p>
         </div>

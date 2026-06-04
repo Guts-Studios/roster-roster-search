@@ -133,7 +133,9 @@ export const useRosterUrlState = () => {
     }
     
     // Default fallback based on source
-    return currentState.source === 'roster' ? '/roster' : '/';
+    if (currentState.source === 'roster') return '/roster';
+    if (currentState.source === 'statistics') return '/statistics';
+    return '/';
   }, [getParam, getRosterState]);
 
   return {
