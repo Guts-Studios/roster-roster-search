@@ -136,3 +136,53 @@ railway run --service Postgres node scripts/migrate-2025-2026-data.cjs
 `railway run` injects `DATABASE_PUBLIC_URL` from the Railway Postgres service. Confirm the host with `check-target-db.cjs` first — it should label as `Railway (PRODUCTION)`.
 
 **Heuristic**: iterate on Dev Neon → migrate Prod Neon → eyeball the Vercel preview with your friend → only then run against Railway production.
+
+## Smoke Tests
+
+`scripts/smoke-tests.cjs` runs ~41 assertions against the configured DB in roughly 3 seconds. Coverage:
+
+| Section | What it checks |
+|---|---|
+| 1. DB connectivity + schema | Connection works; all expected columns (`is_active`, `payroll_year`, `rank_title`, etc.) are present |
+| 2. Record counts | total / `is_current` / `is_active` / visible / active-visible-current all in expected ranges |
+| 3. Migration invariants | latest-per-person, same-badge dedup, `payroll_year`-iff-pay |
+| 4. Specific known records | 10 hand-picked cases (Kachirisky promoted, Achutegui's 2025 payroll, Espinoza II merged with Roberto Espinoza, Charles "Charlie" Ruelas display tweak, Bryan G. Cadena Rebollar inherited badge 3932, Armstrong departed, Alan L. Gonzalez payroll-only, Joey Belizario R-prefix, …) |
+| 5. Redacted records | Exactly 31 `REDACTED-NNN` exist; 0 leak to public listings |
+| 6. Photo coverage | Only the known 9 R-prefix recruits should be without photos |
+| 7. YoY endpoint logic | Departed officers filtered out; Kachirisky shows large positive delta |
+| 8. Top earners endpoint logic | Correct `ORDER BY`; top OT > $200k; top total > $250k |
+| 9. Breakdowns endpoint logic | ≥5 divisions, ≥3 ranks surfacing |
+
+### Running the tests
+
+```powershell
+# Against your local Dev Neon (whatever .env points at)
+npm test
+
+# Against the Vercel Production Neon branch (what the deployed preview reads)
+npm run test:prod
+
+# Direct invocations (equivalent)
+node scripts/smoke-tests.cjs
+.\scripts\run-against-vercel-prod.ps1 scripts/smoke-tests.cjs
+```
+
+The script exits non-zero on any failure, so it's CI-friendly.
+
+### Pre-commit hook
+
+`.githooks/pre-commit` runs the smoke tests automatically when any data-layer file is part of the commit (matches `server.js`, the migration scripts, the schema SQL, `xlsx-helper.cjs`, or `smoke-tests.cjs` itself). Pure UI/copy commits skip the tests so the hook stays fast.
+
+**Enable for this clone:**
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+**Bypass for a single commit** (when you know what you're doing):
+
+```powershell
+git commit --no-verify -m "…"
+```
+
+The hook is opt-in per-clone so contributors who don't want it can ignore it. Once enabled, any commit that touches data-layer files runs `npm test` and aborts if any assertion fails.
