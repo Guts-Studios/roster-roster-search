@@ -9,6 +9,8 @@ import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPers
 import { useResponsivePlaceholder } from "../hooks/useResponsivePlaceholder";
 import { useRosterUrlState } from "../hooks/useUrlState";
 
+const misconductUrl = import.meta.env.VITE_MISCONDUCT_BASE_URL as string | undefined;
+
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { getPlaceholder } = useResponsivePlaceholder();
@@ -278,6 +280,19 @@ const Search = () => {
             >
               View full roster
             </Link>
+            {misconductUrl && (
+              <>
+                <span aria-hidden>·</span>
+                <a
+                  href={misconductUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
+                >
+                  Search Misconduct Records
+                </a>
+              </>
+            )}
             <span aria-hidden>·</span>
             <a
               href="https://www.google.com/maps/d/u/0/viewer?mid=1EwFeKUgF0puu7dpTqgAdXc_qfDawtuQ7"
