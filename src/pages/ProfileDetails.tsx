@@ -330,24 +330,23 @@ const ProfileDetails = () => {
           </div>
 
 
-          {/* Misconduct Records — opens a Google Pinpoint search keyed by officer
-              name. Hidden until VITE_MISCONDUCT_BASE_URL is set in the deployment
-              env. Pinpoint indexes the misconduct documents by names mentioned in
-              the text, so passing the officer's name yields better matches than
-              the badge number.
-              We strip trailing middle initials from the first name ("James D." ->
-              "James") to avoid restricting the search by an initial that may not
-              appear in the source documents. */}
+          {/* Misconduct Records — opens a Google Pinpoint search keyed by the
+              officer's badge number. Per Ben: Pinpoint OCRs the source documents
+              and searches arbitrary terms, but the NSP database button should
+              specifically pass the badge number so the search is tied to the
+              identifier on the officer's profile.
+              Hidden until VITE_MISCONDUCT_BASE_URL is set in the deployment env.
+              Redacted records and REDACTED-NNN placeholder badges are excluded. */}
           {(() => {
             const isRedacted = /^X+$/i.test(person.last_name || '');
-            if (!MISCONDUCT_BASE_URL || !person.first_name || !person.last_name || isRedacted) return null;
-            const firstClean = person.first_name.replace(/\s+[A-Za-z]\.?$/, '').trim();
-            const query = `${firstClean} ${person.last_name}`.trim();
+            const badge = person.badge_number;
+            const isPlaceholderBadge = badge && /^REDACTED-/i.test(badge);
+            if (!MISCONDUCT_BASE_URL || !badge || isRedacted || isPlaceholderBadge) return null;
             const sep = MISCONDUCT_BASE_URL.includes('?') ? '&' : '?';
             return (
               <div className="p-8 border-t border-border">
                 <a
-                  href={`${MISCONDUCT_BASE_URL}${sep}q=${encodeURIComponent(query)}`}
+                  href={`${MISCONDUCT_BASE_URL}${sep}q=${encodeURIComponent(badge)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90 px-6 py-3 rounded-md font-medium transition-colors"
@@ -356,7 +355,7 @@ const ProfileDetails = () => {
                   Search Misconduct Records
                 </a>
                 <p className="text-xs text-muted-foreground mt-3">
-                  Opens a Google Pinpoint search for {query}.
+                  Opens a Google Pinpoint search for badge #{badge}.
                 </p>
               </div>
             );
