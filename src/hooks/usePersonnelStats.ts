@@ -9,92 +9,12 @@ export interface StatsFilters {
   sortBy: 'total_compensation' | 'regular_pay' | 'overtime' | 'premiums';
 }
 
-export interface YoYChange {
-  id: string;
-  first_name: string;
-  last_name: string;
-  badge_number: string | null;
-  classification: string | null;
-  division: string | null;
-  total_2024: number;
-  total_2025: number;
-  delta: number;
-  delta_pct: number;
-}
-
-export interface BreakdownRow {
-  name: string;
-  count: number;
-  total: number;
-  avg: number;
-}
-
-export const usePayHistory = (id: string) => {
-  return useQuery({
-    queryKey: ["personnel", id, "history"],
-    queryFn: async (): Promise<Personnel[]> => {
-      if (!id) return [];
-      return await api.queryMany<Personnel>(`/personnel/${id}/history`);
-    },
-    enabled: !!id,
-  });
-};
-
-export const useYoYChanges = (limit = 25, order: 'asc' | 'desc' = 'desc') => {
-  return useQuery({
-    queryKey: ["personnel-yoy", limit, order],
-    queryFn: async (): Promise<YoYChange[]> => {
-      return await api.queryMany<YoYChange>(`/personnel/yoy-changes?limit=${limit}&order=${order}`);
-    },
-  });
-};
-
-export const useBreakdowns = () => {
-  return useQuery({
-    queryKey: ["personnel-breakdowns"],
-    queryFn: async (): Promise<{ byDivision: BreakdownRow[]; byRank: BreakdownRow[] }> => {
-      return await api.queryOne(`/personnel/breakdowns`) as { byDivision: BreakdownRow[]; byRank: BreakdownRow[] };
-    },
-  });
-};
-
 export const useTopSalaries = (filters: StatsFilters) => {
   return useQuery({
     queryKey: ["personnel-stats", "top-salaries", filters],
     queryFn: async (): Promise<Personnel[]> => {
-      const personnel = await api.post('/personnel/stats', {
-        type: 'top-salaries',
-        filters
-      });
-      
-      // Sort by selected criteria (client-side for calculated fields)
-      const sortedData = personnel.sort((a: Personnel, b: Personnel) => {
-        let aValue = 0;
-        let bValue = 0;
-        
-        switch (filters.sortBy) {
-          case 'total_compensation':
-            aValue = getTotalCompensation(a);
-            bValue = getTotalCompensation(b);
-            break;
-          case 'regular_pay':
-            aValue = a.regular_pay || 0;
-            bValue = b.regular_pay || 0;
-            break;
-          case 'overtime':
-            aValue = a.overtime || 0;
-            bValue = b.overtime || 0;
-            break;
-          case 'premiums':
-            aValue = a.premiums || 0;
-            bValue = b.premiums || 0;
-            break;
-        }
-        
-        return bValue - aValue; // Descending order
-      });
-      
-      return sortedData.slice(0, filters.limit);
+      // Server applies ORDER BY + LIMIT; no need to re-sort here.
+      return await api.post('/personnel/stats', { type: 'top-salaries', filters });
     },
   });
 };
