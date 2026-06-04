@@ -289,7 +289,7 @@ const Search = () => {
                   rel="noopener noreferrer"
                   className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
                 >
-                  Search Misconduct Records
+                  Search misconduct and use of force records
                 </a>
               </>
             )}
@@ -300,7 +300,7 @@ const Search = () => {
               rel="noopener noreferrer"
               className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
             >
-              View zip code interactive map
+              View interactive zip codes map
             </a>
           </div>
         </div>
