@@ -5,6 +5,85 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2026-06-04
+
+### Added
+- **`is_active` column**: New boolean on `personnel` distinguishing currently-employed
+  officers from departed ones. Populated by migration Phase G via Phase E's
+  union-find groups (with canonical-name fallback for non-current pre-Phase-E
+  rows). Used by the Data Analysis page and the `/api/personnel/stats`
+  top-salaries endpoint to exclude departed officers' partial-year pay.
+- **Misconduct Records integration**: Profile pages render a "Search Misconduct
+  Records" button (links to a Pinpoint collection with the officer's badge as
+  the query). Homepage shows a "Search misconduct and use of force records"
+  link to the bare collection. Both gated behind `VITE_MISCONDUCT_BASE_URL`.
+- **Support link**: Navbar item linking to ko-fi.com/inadvertent (external,
+  opens in a new tab).
+- **Smoke test suite**: `scripts/smoke-tests.cjs` runs ~41 assertions against
+  the configured DB in ~3 seconds — schema, record counts, migration
+  invariants, 10 specific known records, redacted-leak checks, photo
+  coverage, and per-endpoint data invariants. `npm test` runs against the
+  configured DB; `npm run test:prod` runs against the Vercel Production
+  Neon branch.
+- **Pre-commit hook**: `.githooks/pre-commit` runs the smoke tests whenever a
+  staged commit touches data-layer files (`server.js`, the migration scripts,
+  the schema SQL, the smoke tests themselves). Opt-in per clone via
+  `git config core.hooksPath .githooks`; pure UI/copy commits skip it.
+
+### Changed
+- **Data Analysis page** (formerly "Statistics"): rewritten to a single
+  ranked-pay list. Removed Summary cards, YoY increases/decreases, Top 10
+  Overtime, By Division, By Rank, Pay Distribution histogram. Sort dropdown
+  exposes Total, Regular Pay, Overtime, Premiums, Other Pay, Payout.
+  Server fetches all active officers (one page of 500); client paginates 10
+  per page. Linked from navbar as "Data Analysis."
+- **Profile back-button**: Remembers Data Analysis as a source so "Back to
+  Results" returns to `/statistics` when the user navigated from there.
+- **Auth comparison**: `/api/auth/verify` now uses `crypto.timingSafeEqual`
+  instead of `===` on the hash. `PASSWORD_SALT` is REQUIRED — the historic
+  fallback was burned in git history; the endpoint now returns 503 if the
+  env var is unset.
+- **Migration Phase G**: `is_active` is propagated through Phase E's
+  union-find groups instead of a global short-canonical equivalence class.
+  Previously, two different officers sharing first-name + first-surname-word
+  could both get is_active=true. The new logic delegates short-canonical
+  matching to Phase E (where it's vetted against the rest of the group's
+  evidence) and uses canonical-only matching for non-current pre-Phase-E
+  records.
+- **Migration Phase E**: Same-roster-year tiebreak is now deterministic
+  (`roster_year DESC`, then badge-present DESC, then `(last_name, first_name)`
+  lex), replacing the prior UUID-lexicographic tiebreak that produced
+  different winners across re-runs.
+
+### Removed
+- **Pay History section** and the Active/Departed pill from profile pages.
+- **Dead-code endpoints**: `/api/personnel/yoy-changes`, `/api/personnel/breakdowns`,
+  `/api/personnel/:id/history` (no UI consumer after the Data Analysis page
+  rewrite; the `:id/history` endpoint also had a canonical-key collision
+  bug and a full-table scan).
+- **Dead-code hooks**: `useYoYChanges`, `useBreakdowns`, `usePayHistory`.
+- **Canonical-name helpers in `server.js`**: only consumer was the deleted
+  `/history` endpoint.
+- **Double-sort in `useTopSalaries`**: the hook used to re-sort the response
+  after the server had already ordered it.
+- **Client-side `generatePasswordHash` / `hashPassword` in `src/utils/auth.ts`**:
+  baked the salt into the public bundle for no benefit.
+- **`getTotalCompensation` debug logging**: fired thousands of times per
+  Data Analysis sort recompute in dev.
+- **Legacy `.kilocode/rules/memory-bank/` NSP v2.0.0 files**: described a
+  Supabase architecture replaced at v3.0.0 and contained a burned plaintext
+  password.
+
+### Fixed / Security
+- **Open redirect on Back button**: `getReturnPath` in `useUrlState` now
+  only honors same-origin relative paths; previously `?returnTo=https://evil.com`
+  would let the profile Back link redirect off-site.
+- **`sortBy` injection guard**: `/api/personnel/stats` top-salaries now
+  rejects unknown `sortBy` values with 400 via an explicit `hasOwnProperty`
+  allowlist (previously fell through to a default, masking misuse).
+- **`/api/personnel/search-simple` empty-query dump**: returns 400 on empty
+  `searchTerm` instead of streaming the entire visible roster.
+
 ## [5.0.0] - 2026-05-13
 
 Note: the 4.0.0 entry below describes a migration that was deployed, then rolled

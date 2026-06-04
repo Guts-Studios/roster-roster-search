@@ -86,7 +86,7 @@ export const useRosterUrlState = () => {
       pageSize: parseInt(getParam('pageSize', '24')) || 24,
       sortBy: getParam('sortBy', 'name') as 'name' | 'regular_pay' | 'overtime' | 'total_compensation',
       sortOrder: getParam('sortOrder', 'asc') as 'asc' | 'desc',
-      source: getParam('source', 'search') // 'search' or 'roster'
+      source: getParam('source', 'search') // 'search' | 'roster' | 'statistics'
     };
   }, [getParam]);
 

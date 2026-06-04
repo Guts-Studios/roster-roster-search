@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a React application for searching and displaying public personnel records. It's a police accountability tool built with Vite, TypeScript, React, shadcn-ui, and Tailwind CSS, with a Railway PostgreSQL backend.
+This is a React application for searching and displaying public personnel records. It's a police accountability tool built with Vite, TypeScript, React, shadcn-ui, and Tailwind CSS. The Vercel preview (this repo) is backed by Neon Postgres; the live Railway production deployment uses Railway Postgres — see the Environments section below for the full split.
 
 ## Development Commands
 
@@ -31,19 +31,23 @@ This is a React application for searching and displaying public personnel record
 - **Types**: `/src/types/index.ts` - TypeScript interfaces, primarily Personnel interface
 
 ### Data Layer
-- **Railway PostgreSQL Integration**: `/src/integrations/database/` - PostgreSQL client and type definitions
+- **PostgreSQL Integration**: `/src/integrations/database/` - Postgres client and type definitions. Backend is Neon (preview) or Railway (prod) depending on env; see Environments below.
 - **React Query**: Used for data fetching, caching, and state management
 - **Personnel Hook**: `usePersonnel`, `usePersonnelById`, `usePersonnelSearch` for data operations
 - **Advanced Personnel Hook**: `useAdvancedPersonnel` for filtered and paginated results
+- **Stats Hook**: `usePersonnelStats.ts` exports `useTopSalaries`, `usePersonnelAggregates`, `useUniqueValues` — used by the Data Analysis page.
 
 ### Key Data Flow
 1. Search page uses `useAdvancedPersonnel` hook with filters for pagination and search
-2. Personnel data fetched from Railway PostgreSQL `personnel` table using raw SQL queries
+2. Personnel data fetched from the configured Postgres `personnel` table using raw SQL queries
 3. Search supports name and badge number queries with intelligent detection (numeric = badge, text = name)
 4. Results displayed with pagination using `RosterList` and `Pagination` components
 
 ### Database Schema
 - Primary table: `personnel` with fields for names, badge numbers, pay information, divisions
+- `is_current` (boolean): selects the latest record per person across years. One row per unique person on every listing.
+- `is_active` (boolean): distinguishes currently-employed officers from departed ones. Set during migration Phase G — true if the person's Phase E union-find group contains a 2026 roster entry. Used by Data Analysis rankings to exclude departed officers' partial-year pay.
+- `roster_year` (int): the year the roster record came from (2024 / 2025 / 2026). `payroll_year` (nullable int): the year the pay numbers reflect (may differ from roster_year — e.g., a 2026 roster record can carry 2025 payroll).
 - App configuration stored in `app_config` table with secure access patterns
 - Personnel photos stored in `/public/photos/` directory with filename conventions
 - PostgreSQL database with connection pooling and optimized queries
@@ -73,7 +77,12 @@ This is a React application for searching and displaying public personnel record
 - Vite build system with SWC for fast compilation
 - Development server runs on port 8080
 - Platform integration for deployment
-- Environment variables for Railway PostgreSQL connection (`VITE_DATABASE_URL`)
+
+### Environment variables
+- `DATABASE_URL` — Postgres connection string. Local scripts read it via `dotenv` from `.env`. On Vercel, set per environment via the Neon Vercel integration.
+- `PASSWORD_SALT` — REQUIRED. Salt for the SHA-256 password hash stored in `app_config.search_password_hash`. The historic default was burned in git history, so `/api/auth/verify` now returns 503 if this is unset.
+- `VITE_MISCONDUCT_BASE_URL` — Optional. When set, the profile page shows a "Search Misconduct Records" button (appends `?q=<badge>` for a Pinpoint-style search), and the homepage shows a "Search misconduct and use of force records" link to the bare URL. Inlined at build time by Vite.
+- `NODE_ENV` — `production` in prod environments.
 
 ## Environments — CRITICAL
 
@@ -149,9 +158,11 @@ railway run --service Postgres node scripts/migrate-2025-2026-data.cjs
 | 4. Specific known records | 10 hand-picked cases (Kachirisky promoted, Achutegui's 2025 payroll, Espinoza II merged with Roberto Espinoza, Charles "Charlie" Ruelas display tweak, Bryan G. Cadena Rebollar inherited badge 3932, Armstrong departed, Alan L. Gonzalez payroll-only, Joey Belizario R-prefix, …) |
 | 5. Redacted records | Exactly 31 `REDACTED-NNN` exist; 0 leak to public listings |
 | 6. Photo coverage | Only the known 9 R-prefix recruits should be without photos |
-| 7. YoY endpoint logic | Departed officers filtered out; Kachirisky shows large positive delta |
-| 8. Top earners endpoint logic | Correct `ORDER BY`; top OT > $200k; top total > $250k |
-| 9. Breakdowns endpoint logic | ≥5 divisions, ≥3 ranks surfacing |
+| 7. YoY data logic | SQL join of 2024/2025 payroll rows: departed officers excluded via `is_active`, Kachirisky shows large positive delta |
+| 8. Top earners endpoint logic | Correct `ORDER BY` on `/api/personnel/stats`; top OT > $200k; top total > $250k |
+| 9. Breakdowns data logic | SQL aggregation over active/current personnel: ≥5 divisions, ≥3 ranks surfacing |
+
+Sections 7 and 9 are SQL-level data invariants (the original `/yoy-changes` and `/breakdowns` HTTP endpoints were removed when the Data Analysis page was simplified). Section 8 still exercises the live `/api/personnel/stats` endpoint.
 
 ### Running the tests
 
