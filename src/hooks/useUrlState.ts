@@ -113,9 +113,18 @@ export const useRosterUrlState = () => {
 
   // Get return path from URL parameters
   const getReturnPath = useCallback((): string => {
-    const returnTo = getParam('returnTo');
+    const rawReturnTo = getParam('returnTo');
     const currentState = getRosterState();
-    
+
+    // Open-redirect guard: only honor same-origin relative paths. A free-form
+    // returnTo would let an attacker craft /profile/...?returnTo=https://evil.com
+    // and turn the Back button into a phishing redirect.
+    const returnTo = (rawReturnTo
+      && rawReturnTo.startsWith('/')
+      && !rawReturnTo.startsWith('//'))
+      ? rawReturnTo
+      : '';
+
     if (returnTo) {
       // Construct return URL with preserved state
       const params = new URLSearchParams();

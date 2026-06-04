@@ -434,10 +434,14 @@ app.post('/api/auth/verify', authRateLimit, async (req, res) => {
     // Hash the input password with the same salt from environment variable
     const salt = process.env.PASSWORD_SALT || 'watch_the_watchers_salt_2024';
     const inputHash = await hashPassword(password, salt);
-    
-    // Compare hashes
-    const isValid = inputHash === result.rows[0].value;
-    
+
+    // Constant-time hash comparison — JS `===` short-circuits on first
+    // differing character and would leak hash bytes via response timing.
+    const crypto = await import('crypto');
+    const a = Buffer.from(inputHash, 'hex');
+    const b = Buffer.from(result.rows[0].value, 'hex');
+    const isValid = a.length === b.length && crypto.timingSafeEqual(a, b);
+
     res.json({ valid: isValid });
   } catch (error) {
     console.error('Error verifying password:', error);
@@ -496,10 +500,11 @@ app.post('/api/personnel/all', async (req, res) => {
 app.post('/api/personnel/search-simple', async (req, res) => {
   try {
     const { searchTerm } = req.body;
-    
+
+    // Reject empty queries instead of dumping the entire visible roster.
+    // Callers that want the full list should use the paginated /personnel/all.
     if (!searchTerm?.trim()) {
-      const result = await pool.query(`SELECT * FROM personnel WHERE ${VISIBLE_FILTER} ORDER BY last_name ASC`);
-      return res.json(result.rows);
+      return res.status(400).json({ error: 'searchTerm is required' });
     }
 
     const searchPattern = `%${searchTerm}%`;
@@ -558,7 +563,13 @@ app.post('/api/personnel/stats', async (req, res) => {
         overtime: 'overtime DESC NULLS LAST',
         premiums: 'premiums DESC NULLS LAST',
       };
-      const orderBy = orderClauses[sortBy] || orderClauses.total_compensation;
+      // Explicit allowlist guard — sortBy is interpolated into the query
+      // string, so anything outside the known keys must be rejected, not
+      // silently coerced to a default.
+      if (!Object.prototype.hasOwnProperty.call(orderClauses, sortBy)) {
+        return res.status(400).json({ error: 'Invalid sortBy value' });
+      }
+      const orderBy = orderClauses[sortBy];
 
       paramCount++;
       params.push(limit);

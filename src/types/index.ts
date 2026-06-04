@@ -46,21 +46,10 @@ export const formatHeight = (height?: string | number | null): string => {
 
 // Helper function to get total compensation
 export const getTotalCompensation = (person: Personnel): number => {
-  // Force number conversion and addition
-  const regular_pay = parseFloat(person.regular_pay?.toString() || '0') || 0;
-  const premiums = parseFloat(person.premiums?.toString() || '0') || 0;
-  const overtime = parseFloat(person.overtime?.toString() || '0') || 0;
-  const payout = parseFloat(person.payout?.toString() || '0') || 0;
-  const other_pay = parseFloat(person.other_pay?.toString() || '0') || 0;
-  const health_dental_vision = parseFloat(person.health_dental_vision?.toString() || '0') || 0;
-
-  // Development-only debugging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('getTotalCompensation debug:', {
-      regular_pay, premiums, overtime, payout, other_pay, health_dental_vision
-    });
-  }
-
-  // Explicit mathematical addition
-  return regular_pay + premiums + overtime + payout + other_pay + health_dental_vision;
+  return (Number(person.regular_pay) || 0)
+       + (Number(person.premiums) || 0)
+       + (Number(person.overtime) || 0)
+       + (Number(person.payout) || 0)
+       + (Number(person.other_pay) || 0)
+       + (Number(person.health_dental_vision) || 0);
 };
