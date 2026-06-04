@@ -354,9 +354,6 @@ const ProfileDetails = () => {
                   <FileSearch size={20} />
                   Search Misconduct Records
                 </a>
-                <p className="text-xs text-muted-foreground mt-3">
-                  Opens a Google Pinpoint search for badge #{badge}.
-                </p>
               </div>
             );
           })()}
