@@ -508,7 +508,19 @@ async function migrate() {
     for (const [, members] of groups) {
       if (members.length < 2) continue;
       mergedGroups++;
-      members.sort((a, b) => (b.roster_year - a.roster_year) || (a.id < b.id ? 1 : -1));
+      // Deterministic ordering: latest year wins, prefer records with a badge,
+      // then lexicographic on (last_name, first_name). Avoids the previous
+      // UUID-based tiebreak whose winner shifted across re-runs because
+      // Phase A wipes 2025/2026 rows and re-assigns random UUIDs.
+      members.sort((a, b) => {
+        if (a.roster_year !== b.roster_year) return b.roster_year - a.roster_year;
+        const aBadge = a.badge_number ? 1 : 0;
+        const bBadge = b.badge_number ? 1 : 0;
+        if (aBadge !== bBadge) return bBadge - aBadge;
+        const aKey = (a.last_name || '') + '|' + (a.first_name || '');
+        const bKey = (b.last_name || '') + '|' + (b.first_name || '');
+        return aKey < bKey ? -1 : aKey > bKey ? 1 : 0;
+      });
       const [winner, ...rest] = members;
       console.log(`  Merging group: keeping ${winner.first_name} ${winner.last_name} ` +
                   `#${winner.badge_number || '(no badge)'} year=${winner.roster_year}; ` +
