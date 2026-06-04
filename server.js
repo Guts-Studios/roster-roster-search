@@ -257,8 +257,15 @@ app.post('/api/auth/verify', authRateLimit, async (req, res) => {
       return res.status(500).json({ error: 'Authentication configuration not found' });
     }
 
-    // Hash the input password with the same salt from environment variable
-    const salt = process.env.PASSWORD_SALT || 'watch_the_watchers_salt_2024';
+    // Hash the input password with the same salt from environment variable.
+    // The previous hardcoded fallback ("watch_the_watchers_salt_2024") is now
+    // permanently in git history along with the corresponding plaintext password,
+    // so we refuse to fall back to it. PASSWORD_SALT must be set in every env.
+    const salt = process.env.PASSWORD_SALT;
+    if (!salt) {
+      console.error('PASSWORD_SALT env var is not set; rejecting /auth/verify');
+      return res.status(503).json({ error: 'Authentication service unavailable' });
+    }
     const inputHash = await hashPassword(password, salt);
 
     // Constant-time hash comparison — JS `===` short-circuits on first
