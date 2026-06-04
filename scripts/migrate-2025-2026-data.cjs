@@ -564,27 +564,59 @@ async function migrate() {
     }
 
     // ---- Phase G: populate is_active flag ----
-    // A record is "active" if any record sharing its canonical-name group has a
-    // 2026 roster entry. This makes "currently employed by SAPD" a single-column
-    // filter instead of an inferred join. Redacted REDACTED-NNN records are
-    // active iff their own row is roster_year=2026.
-    const activeNames = new Set();
-    const allForActive = await client.query(`SELECT id, last_name, first_name, roster_year FROM personnel`);
-    for (const row of allForActive.rows) {
-      if (row.roster_year !== 2026) continue;
-      if (!row.last_name || /^X+$/i.test(row.last_name.replace(/\s+/g, ''))) continue;
-      activeNames.add(canonicalNameKey(row.last_name, row.first_name));
-      activeNames.add(shortCanonicalNameKey(row.last_name, row.first_name));
+    // A record is "active" if it represents a person currently on the 2026 roster.
+    //
+    // We can't simply test "this row's canonical-name key matches a 2026 record's
+    // canonical-name key" because canonical doesn't handle compound surnames
+    // (e.g., 2025 payroll "Rodriguez Godinez Victor A." vs 2026 roster "Rodriguez
+    // Victor"). The earlier fix of also adding short-canonical to a global
+    // activeNames set over-matched: two different officers who share first-name +
+    // first-surname-word would both get marked active even when only one is on the
+    // 2026 roster.
+    //
+    // The correct equivalence is the one Phase E already computed via union-find
+    // on (badge ∪ canonical ∪ short-canonical) — that grouping vets short-canonical
+    // matches against the rest of the merged-group evidence. We propagate is_active
+    // through those groups, then fall back to canonical-only matching for non-current
+    // pre-Phase-E records (which is safe because canonical alone can't collide
+    // across distinct people in this dataset).
+
+    // Build a map of every Phase E member's id -> their group's root id.
+    const idToRoot = new Map();
+    for (const row of currentNamed.rows) {
+      idToRoot.set(row.id, find(row.id));
     }
 
+    // A Phase E group is active if any of its members has roster_year=2026.
+    // (Phase E's tiebreak makes the winner the latest year, so equivalently:
+    // "the group's winner is a 2026 record.")
+    const activeRoots = new Set();
+    for (const row of currentNamed.rows) {
+      if (row.roster_year === 2026) activeRoots.add(find(row.id));
+    }
+
+    // Canonical-name keys belonging to records in active Phase E groups. Used
+    // to mark non-current pre-Phase-E records (2024/2025 records that flipped
+    // current=false during Phase D and never entered Phase E's union-find).
+    const activeCanonicals = new Set();
+    for (const row of currentNamed.rows) {
+      if (!activeRoots.has(find(row.id))) continue;
+      activeCanonicals.add(canonicalNameKey(row.last_name, row.first_name));
+    }
+
+    const allForActive = await client.query(`SELECT id, last_name, first_name, roster_year FROM personnel`);
     const activeIds = [];
     const inactiveIds = [];
     for (const row of allForActive.rows) {
       const isRedacted = /^X+$/i.test((row.last_name || '').replace(/\s+/g, ''));
-      const active = isRedacted
-        ? row.roster_year === 2026
-        : (activeNames.has(canonicalNameKey(row.last_name, row.first_name)) ||
-           activeNames.has(shortCanonicalNameKey(row.last_name, row.first_name)));
+      let active;
+      if (isRedacted) {
+        active = row.roster_year === 2026;
+      } else if (idToRoot.has(row.id)) {
+        active = activeRoots.has(idToRoot.get(row.id));
+      } else {
+        active = activeCanonicals.has(canonicalNameKey(row.last_name, row.first_name));
+      }
       (active ? activeIds : inactiveIds).push(row.id);
     }
     if (activeIds.length) {
