@@ -82,8 +82,26 @@ app.use(cors());
 app.use(express.json());
 app.use('/api', apiRateLimit); // Apply rate limiting to all API routes
 
-// Serve static files from dist directory
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve static files from dist directory. Cache policy:
+//   - /assets/* (Vite-built JS/CSS/fonts) are content-hashed by Vite, so the
+//     filename changes when the file changes. Safe to cache forever as immutable.
+//   - index.html must NOT be long-cached — it's the entry point that pulls in
+//     the current hashed bundle URLs, and the favicon links use ?v=<git-sha>
+//     query strings injected at build time. Browsers must revalidate to see new
+//     versions on the next release.
+//   - Other /public files (favicons, photos) get a short cache with revalidation.
+app.use(express.static(path.join(__dirname, 'dist'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (/[/\\]assets[/\\]/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      // favicons, /photos/*, /logo/*, /data/* — short cache + revalidate
+      res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+    }
+  },
+}));
 
 // Filter applied to every listing endpoint to suppress fully-redacted personnel
 // (last_name="XXXXXXX") from the public-facing roster/search results. Direct profile
