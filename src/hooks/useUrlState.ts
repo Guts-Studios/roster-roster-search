@@ -90,7 +90,9 @@ export const useRosterUrlState = () => {
     };
   }, [getParam]);
 
-  // Set roster state in URL
+  // Set roster state in URL. Values matching the defaults from getRosterState
+  // are coerced to '' so setParams strips them from the URL — keeps the homepage
+  // and other landing URLs clean instead of accumulating ?sortBy=name&sortOrder=asc&...
   const setRosterState = useCallback((state: {
     firstName?: string;
     lastName?: string;
@@ -101,7 +103,19 @@ export const useRosterUrlState = () => {
     sortOrder?: string;
     source?: string;
   }) => {
-    setParams(state);
+    const ROSTER_DEFAULTS: Record<string, string | number> = {
+      page: 1,
+      pageSize: 24,
+      sortBy: 'name',
+      sortOrder: 'asc',
+      source: 'search',
+    };
+    const cleaned: Record<string, string | number | undefined> = {};
+    for (const [k, v] of Object.entries(state)) {
+      if (v === undefined) continue;
+      cleaned[k] = (k in ROSTER_DEFAULTS && v === ROSTER_DEFAULTS[k]) ? '' : v;
+    }
+    setParams(cleaned);
   }, [setParams]);
 
   // Create profile link with current state preserved
