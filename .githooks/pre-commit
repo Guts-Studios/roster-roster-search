@@ -1,0 +1,35 @@
+#!/bin/sh
+# Pre-commit hook: runs the data-layer smoke tests when any file that could
+# affect the migration, schema, server-side endpoints, or smoke tests is
+# part of the commit. Skips silently for pure frontend/copy changes so
+# the hook stays fast on routine UI work.
+#
+# Enable per-clone with:
+#   git config core.hooksPath .githooks
+#
+# Bypass for a single commit with:
+#   git commit --no-verify
+
+# Files that, when changed, warrant a smoke-test run.
+RELEVANT_PATTERNS='^(server\.js|scripts/migrate-2025-2026-(data|extra-schema)\.(cjs|sql)|scripts/smoke-tests\.cjs|scripts/xlsx-helper\.cjs)$'
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+if echo "$staged" | grep -E "$RELEVANT_PATTERNS" >/dev/null 2>&1; then
+  echo ""
+  echo "[pre-commit] data-layer files changed — running smoke tests…"
+  echo ""
+  if ! npm test --silent; then
+    echo ""
+    echo "[pre-commit] Smoke tests failed. Fix the issues above OR re-commit with --no-verify if you know what you're doing."
+    exit 1
+  fi
+  echo ""
+  echo "[pre-commit] Smoke tests passed."
+fi
+
+exit 0

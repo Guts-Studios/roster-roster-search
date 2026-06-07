@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Info, BarChart3, Search, Menu, X } from "lucide-react";
+import { Home, Info, BarChart3, Search, Menu, X, Heart } from "lucide-react";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,9 @@ const Navbar = () => {
 
   const navItems = [
     { to: "/", icon: Search, label: "Public Records" },
+    { to: "/statistics", icon: BarChart3, label: "Data Analysis" },
     { to: "/about", icon: Info, label: "About" },
+    { to: "https://ko-fi.com/inadvertent", icon: Heart, label: "Support", external: true },
   ];
 
   return (
@@ -45,21 +47,28 @@ const Navbar = () => {
           <div className="hidden md:block">
             <NavigationMenu>
               <NavigationMenuList className="gap-2">
-                {navItems.map(({ to, icon: Icon, label }) => (
-                  <NavigationMenuItem key={to}>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        to={to}
-                        className={cn(
-                          "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:border-2 hover:border-black rounded-md transition-all border-2 border-transparent",
+                {navItems.map(({ to, icon: Icon, label, external }) => {
+                  const className = cn(
+                    "flex items-center gap-1 px-4 py-2 text-sm text-foreground hover:border-2 hover:border-foreground rounded-md transition-all border-2 border-transparent",
+                  );
+                  return (
+                    <NavigationMenuItem key={to}>
+                      <NavigationMenuLink asChild>
+                        {external ? (
+                          <a href={to} target="_blank" rel="noopener noreferrer" className={className}>
+                            <Icon size={16} />
+                            <span>{label}</span>
+                          </a>
+                        ) : (
+                          <Link to={to} className={className}>
+                            <Icon size={16} />
+                            <span>{label}</span>
+                          </Link>
                         )}
-                      >
-                        <Icon size={16} />
-                        <span>{label}</span>
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                ))}
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  );
+                })}
               </NavigationMenuList>
             </NavigationMenu>
           </div>
@@ -70,7 +79,7 @@ const Navbar = () => {
               variant="ghost"
               size="sm"
               onClick={toggleMobileMenu}
-              className="text-foreground hover:border-2 hover:border-black border-2 border-transparent transition-all"
+              className="text-foreground hover:border-2 hover:border-foreground border-2 border-transparent transition-all"
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </Button>
@@ -81,17 +90,32 @@ const Navbar = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-inadvertent-dark-cream">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map(({ to, icon: Icon, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  onClick={closeMobileMenu}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:border-2 hover:border-black rounded-md transition-all border-2 border-transparent block"
-                >
-                  <Icon size={16} />
-                  <span>{label}</span>
-                </Link>
-              ))}
+              {navItems.map(({ to, icon: Icon, label, external }) => {
+                const className = "flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:border-2 hover:border-foreground rounded-md transition-all border-2 border-transparent block";
+                return external ? (
+                  <a
+                    key={to}
+                    href={to}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={closeMobileMenu}
+                    className={className}
+                  >
+                    <Icon size={16} />
+                    <span>{label}</span>
+                  </a>
+                ) : (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={closeMobileMenu}
+                    className={className}
+                  >
+                    <Icon size={16} />
+                    <span>{label}</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}

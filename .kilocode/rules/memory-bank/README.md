@@ -79,15 +79,6 @@ The successful layout pattern for the UnitCard action bar:
 - **Current Version**: 0.6.2
 - **Last Updated**: January 8, 2025
 
-## Legacy Files
-The memory bank also contains legacy files from a previous project ("No Secret Police Personnel Database"):
-- `project-overview.md` (legacy)
-- `technical-architecture.md` (legacy)
-- `development-history.md` (legacy)
-- `design-system.md` (legacy)
-
-These files are preserved for reference but relate to a different project with different requirements and architecture.
-
 ---
 
 *This memory bank serves as a comprehensive knowledge base for the Warcrow Army Builder project, capturing both current state and development history for future reference and continuation.*

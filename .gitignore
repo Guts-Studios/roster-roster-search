@@ -16,6 +16,10 @@ dist-ssr
 .env
 .env.local
 .env.production
+.env.vercel*
+
+# Local agent / editor config
+.claude/
 
 # Editor directories and files
 .vscode/*
@@ -27,3 +31,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*.local

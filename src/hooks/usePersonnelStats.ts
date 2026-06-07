@@ -13,39 +13,8 @@ export const useTopSalaries = (filters: StatsFilters) => {
   return useQuery({
     queryKey: ["personnel-stats", "top-salaries", filters],
     queryFn: async (): Promise<Personnel[]> => {
-      const personnel = await api.post('/personnel/stats', {
-        type: 'top-salaries',
-        filters
-      });
-      
-      // Sort by selected criteria (client-side for calculated fields)
-      const sortedData = personnel.sort((a: Personnel, b: Personnel) => {
-        let aValue = 0;
-        let bValue = 0;
-        
-        switch (filters.sortBy) {
-          case 'total_compensation':
-            aValue = getTotalCompensation(a);
-            bValue = getTotalCompensation(b);
-            break;
-          case 'regular_pay':
-            aValue = a.regular_pay || 0;
-            bValue = b.regular_pay || 0;
-            break;
-          case 'overtime':
-            aValue = a.overtime || 0;
-            bValue = b.overtime || 0;
-            break;
-          case 'premiums':
-            aValue = a.premiums || 0;
-            bValue = b.premiums || 0;
-            break;
-        }
-        
-        return bValue - aValue; // Descending order
-      });
-      
-      return sortedData.slice(0, filters.limit);
+      // Server applies ORDER BY + LIMIT; no need to re-sort here.
+      return await api.post('/personnel/stats', { type: 'top-salaries', filters });
     },
   });
 };

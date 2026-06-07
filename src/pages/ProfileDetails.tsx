@@ -2,14 +2,28 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePersonnelById } from "../hooks/usePersonnel";
-import { getFullName, getTotalCompensation } from "../types";
+import { getFullName, getTotalCompensation, formatHeight } from "../types";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, DollarSign, X, ZoomIn } from "lucide-react";
+import { ArrowLeft, Shield, DollarSign, X, ZoomIn, FileSearch } from "lucide-react";
 import { getPhotoUrlVariations } from "@/utils/photoUtils";
 import { useRosterUrlState } from "../hooks/useUrlState";
+
+// Misconduct Records button — feature-flagged. Set VITE_MISCONDUCT_BASE_URL in
+// the deployment environment when Ben publishes the Google Pinpoint collection
+// and the button will render on profiles that have a badge number. The badge is
+// appended as a search query.
+const MISCONDUCT_BASE_URL = import.meta.env.VITE_MISCONDUCT_BASE_URL || '';
+
+// Hoisted outside the component: constructing Intl.NumberFormat is ~10-50x slower than .format().
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 const ProfileDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,44 +32,37 @@ const ProfileDetails = () => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const { getReturnPath } = useRosterUrlState();
 
-  // Check for working photo URL by trying multiple variations (same logic as ProfileCard)
+  // Check for working photo URL: probe all variations in parallel; first success wins.
+  // Cleanup guards against stale state when the user navigates between profiles before
+  // probes resolve.
   useEffect(() => {
     if (!person) {
       setPhotoUrl(null);
       return;
     }
-    
-    const findWorkingPhotoUrl = async () => {
-      const potentialUrls = getPhotoUrlVariations(person);
-      if (potentialUrls.length === 0) {
-        setPhotoUrl(null);
-        return;
-      }
-      
-      // Try each URL variation until we find one that works
-      for (const url of potentialUrls) {
-        try {
-          const success = await new Promise<boolean>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-            img.src = url;
-          });
-          
-          if (success) {
-            setPhotoUrl(url);
-            return;
-          }
-        } catch {
-          continue;
-        }
-      }
-      
-      // If no variation worked, set to null
+
+    let cancelled = false;
+    const potentialUrls = getPhotoUrlVariations(person);
+    if (potentialUrls.length === 0) {
       setPhotoUrl(null);
-    };
-    
-    findWorkingPhotoUrl();
+      return;
+    }
+
+    Promise.any(
+      potentialUrls.map(
+        (url) =>
+          new Promise<string>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(url);
+            img.onerror = () => reject();
+            img.src = url;
+          })
+      )
+    )
+      .then((url) => { if (!cancelled) setPhotoUrl(url); })
+      .catch(() => { if (!cancelled) setPhotoUrl(null); });
+
+    return () => { cancelled = true; };
   }, [person]);
 
   if (isLoading) {
@@ -70,8 +77,8 @@ const ProfileDetails = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
-          <p className="text-muted-foreground mb-6">You need to be authenticated to view public records.</p>
+          <h1 className="text-2xl font-bold text-destructive mb-4">Unable to load record</h1>
+          <p className="text-muted-foreground mb-6">Something went wrong fetching this profile. Please try again.</p>
           <Link to={getReturnPath()}>
             <Button className="bg-inadvertent-yellow text-inadvertent-dark-text">
               <ArrowLeft size={16} /> Return to Results
@@ -99,75 +106,36 @@ const ProfileDetails = () => {
   }
 
   const fullName = getFullName(person);
-  const initials = `${person.first_name[0]}${person.last_name[0]}`;
-  // Production-safe currency formatting function
+  const initials = `${person.first_name?.[0] || ''}${person.last_name?.[0] || ''}`;
+
   const formatCurrency = (value: number | null | undefined): string => {
     if (value === null || value === undefined || isNaN(value) || value <= 0) {
       return '$0.00';
     }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
+    return CURRENCY_FORMATTER.format(value);
   };
 
-  // Production-safe total calculation
-  const calculateTotalCompensation = (): string => {
-    try {
-      // Manual calculation to bypass any caching issues
-      const regularPayNum = parseFloat(String(person.regular_pay || '0')) || 0;
-      const premiumsNum = parseFloat(String(person.premiums || '0')) || 0;
-      const overtimeNum = parseFloat(String(person.overtime || '0')) || 0;
-      const payoutNum = parseFloat(String(person.payout || '0')) || 0;
-      const otherPayNum = parseFloat(String(person.other_pay || '0')) || 0;
-      const healthNum = parseFloat(String(person.health_dental_vision || '0')) || 0;
-      
-      // Development-only debugging
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Compensation calculation debug:', {
-          regular_pay: regularPayNum,
-          premiums: premiumsNum,
-          overtime: overtimeNum,
-          payout: payoutNum,
-          other_pay: otherPayNum,
-          health_dental_vision: healthNum
-        });
-      }
-      
-      // Force numerical addition
-      const manualTotal = regularPayNum + premiumsNum + overtimeNum + payoutNum + otherPayNum + healthNum;
-      
-      return manualTotal > 0 ? formatCurrency(manualTotal) : 'Not available';
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error calculating total compensation:', error);
-      }
-      return 'Not available';
-    }
-  };
-
-  const formattedCompensation = calculateTotalCompensation();
+  const total = getTotalCompensation(person);
+  const formattedCompensation = total > 0 ? formatCurrency(total) : 'Not available';
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Link to={getReturnPath()} className="inline-flex items-center text-black hover:text-foreground mb-6">
-          <Button variant="outline" className="border-black text-black hover:bg-black/10 text-lg px-6 py-3">
+        <Link to={getReturnPath()} className="inline-flex items-center text-foreground hover:text-foreground mb-6">
+          <Button variant="outline" className="border-foreground text-foreground hover:bg-foreground/10 text-lg px-6 py-3">
             <ArrowLeft size={20} className="mr-2" /> Back to Results
           </Button>
         </Link>
         
         {/* Enhanced Profile Details Card - No gray background */}
-        <div className="w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg border border-gray-200">
+        <div className="w-full max-w-3xl mx-auto bg-card rounded-lg shadow-lg border border-border">
           {/* Header Section with Enhanced Styling */}
-          <div className="bg-gradient-to-r from-gray-50 to-white p-8 rounded-t-lg">
+          <div className="bg-card p-8 rounded-t-lg">
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
               {/* Enhanced Profile Picture with Zoom */}
               <div className="relative group">
                 <div
-                  className="relative h-56 w-44 sm:h-72 sm:w-56 bg-black border-4 border-black flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-lg"
+                  className="relative h-56 w-44 sm:h-72 sm:w-56 bg-secondary border-4 border-foreground flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-lg"
                   onClick={() => setIsImageZoomed(true)}
                 >
                   {photoUrl ? (
@@ -177,8 +145,8 @@ const ProfileDetails = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-black flex items-center justify-center">
-                      <span className="text-white font-bold text-2xl sm:text-3xl">{initials}</span>
+                    <div className="w-full h-full bg-secondary flex items-center justify-center">
+                      <span className="text-foreground font-bold text-2xl sm:text-3xl">{initials}</span>
                     </div>
                   )}
                   {/* Zoom indicator */}
@@ -190,28 +158,28 @@ const ProfileDetails = () => {
               
               {/* Enhanced Personnel Information */}
               <div className="flex flex-col items-center lg:items-start flex-1 space-y-6">
-                <h1 className="text-4xl lg:text-5xl font-bold text-black text-center lg:text-left leading-tight">{fullName}</h1>
-                
+                <h1 className="text-4xl lg:text-5xl font-bold text-foreground text-center lg:text-left leading-tight">{fullName}</h1>
+
                 {/* Enhanced Personnel Information - Clean Layout */}
                 <div className="flex flex-col gap-3 w-full max-w-md text-center lg:text-left">
-                  {person.classification && (
+                  {(person.rank_title || person.classification) && (
                     <div className="py-2">
-                      <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Rank</div>
-                      <div className="text-2xl font-bold text-black">{person.classification}</div>
+                      <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">Rank</div>
+                      <div className="text-2xl font-bold text-foreground">{person.rank_title || person.classification}</div>
                     </div>
                   )}
                   
                   {person.division && (
                     <div className="py-2">
-                      <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Division</div>
-                      <div className="text-2xl font-bold text-black">{person.division}</div>
+                      <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">Division</div>
+                      <div className="text-2xl font-bold text-foreground">{person.division}</div>
                     </div>
                   )}
                   
                   {person.badge_number && (
                     <div className="py-2">
-                      <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Badge Number</div>
-                      <div className="text-2xl font-bold text-black">{person.badge_number}</div>
+                      <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">Badge Number</div>
+                      <div className="text-2xl font-bold text-foreground">{person.badge_number}</div>
                     </div>
                   )}
                 </div>
@@ -219,70 +187,176 @@ const ProfileDetails = () => {
             </div>
           </div>
           
+          {/* Personal Details Section */}
+          {(person.gender || person.ethnicity || person.height || person.weight || person.year_of_hire) && (
+            <div className="p-8 border-t border-border">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {person.year_of_hire && (
+                  <div className="border-l-4 border-foreground pl-6 py-2">
+                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Year of Hire</span>
+                    <p className="text-xl font-bold text-foreground">{person.year_of_hire}</p>
+                  </div>
+                )}
+                {person.gender && (
+                  <div className="border-l-4 border-foreground pl-6 py-2">
+                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Gender</span>
+                    <p className="text-xl font-bold text-foreground">{person.gender}</p>
+                  </div>
+                )}
+                {person.ethnicity && (
+                  <div className="border-l-4 border-foreground pl-6 py-2">
+                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Ethnicity</span>
+                    <p className="text-xl font-bold text-foreground">{person.ethnicity}</p>
+                  </div>
+                )}
+                {person.height && (
+                  <div className="border-l-4 border-foreground pl-6 py-2">
+                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Height</span>
+                    <p className="text-xl font-bold text-foreground">{formatHeight(person.height)}</p>
+                  </div>
+                )}
+                {person.weight && (
+                  <div className="border-l-4 border-foreground pl-6 py-2">
+                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Weight</span>
+                    <p className="text-xl font-bold text-foreground">{person.weight} lbs</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Data Disclaimer */}
-          <div className="px-8 py-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-sm text-gray-600 text-center">Disclaimer: Data is current as of 2024</p>
+          <div className="px-8 py-4 bg-secondary border-t border-border">
+            <p className="text-sm text-muted-foreground text-center">
+              <span className="font-semibold">Disclaimer:</span>{' '}
+              {(() => {
+                // Some records came in via the 2025 payroll CSV alone (no badge, no
+                // division, no demographics — i.e., de-redacted personnel who don't
+                // appear on any actual roster). Those shouldn't claim "roster data as
+                // of YYYY" because we don't have real roster data for them.
+                const hasRosterData = !!(person.badge_number || person.division || person.gender || person.height || person.year_of_hire);
+                return (
+                  <>
+                    {hasRosterData && person.roster_year ? (
+                      <>
+                        Roster data as of {person.roster_year === 2026 ? 'January 2026' : person.roster_year}.
+                        {person.roster_year < 2026 && (
+                          <> This person did not appear on the latest (January 2026) roster.</>
+                        )}
+                        <br />
+                      </>
+                    ) : (
+                      <>
+                        No current roster data on file for this person.
+                        <br />
+                      </>
+                    )}
+                    {person.payroll_year
+                      ? `Payroll data as of ${person.payroll_year}.`
+                      : 'No payroll data available for this record.'}
+                  </>
+                );
+              })()}
+            </p>
           </div>
           
           {/* Enhanced Compensation Section */}
           <div className="p-8">
-            <h3 className="text-2xl font-bold text-black mb-8 border-b-2 border-black pb-3">
-              Compensation Details
-            </h3>
+            <h2 className="text-2xl font-bold text-foreground mb-8 border-b-2 border-foreground pb-3">
+              Payment Information
+            </h2>
             <div className="flex flex-col gap-6">
-              {person.regular_pay && (
-                <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Regular Pay</h2>
-                  <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.regular_pay)}
+              {person.regular_pay != null && Number(person.regular_pay) > 0 && (
+                <div className="border-l-4 border-foreground pl-6 py-2">
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Regular Pay</span>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(Number(person.regular_pay))}
                   </p>
                 </div>
               )}
 
-              {person.overtime && person.overtime > 0 && (
-                <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Overtime</h2>
-                  <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.overtime)}
+              {person.overtime != null && Number(person.overtime) > 0 && (
+                <div className="border-l-4 border-foreground pl-6 py-2">
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Overtime</span>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(Number(person.overtime))}
                   </p>
                 </div>
               )}
 
-              {person.premiums && person.premiums > 0 && (
-                <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Premiums</h2>
-                  <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.premiums)}
+              {person.premiums != null && Number(person.premiums) > 0 && (
+                <div className="border-l-4 border-foreground pl-6 py-2">
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Premiums</span>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(Number(person.premiums))}
                   </p>
                 </div>
               )}
 
-              {person.health_dental_vision && person.health_dental_vision > 0 && (
-                <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Health/Dental/Vision</h2>
-                  <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.health_dental_vision)}
+              {person.health_dental_vision != null && Number(person.health_dental_vision) > 0 && (
+                <div className="border-l-4 border-foreground pl-6 py-2">
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Health/Dental/Vision</span>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(Number(person.health_dental_vision))}
                   </p>
                 </div>
               )}
 
-              {person.payout && person.payout > 0 && (
-                <div className="border-l-4 border-black pl-6 py-2">
-                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Payout</h2>
-                  <p className="text-2xl font-bold text-black">
-                    {formatCurrency(person.payout)}
+              {person.payout != null && Number(person.payout) > 0 && (
+                <div className="border-l-4 border-foreground pl-6 py-2">
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Payout</span>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(Number(person.payout))}
                   </p>
                 </div>
               )}
 
-              <div className="border-l-4 border-black pl-6 py-2">
-                <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Total Compensation</h2>
-                <p className="text-3xl font-bold text-black">
+              {person.other_pay != null && Number(person.other_pay) > 0 && (
+                <div className="border-l-4 border-foreground pl-6 py-2">
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Other Pay</span>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(Number(person.other_pay))}
+                  </p>
+                </div>
+              )}
+
+              <div className="border-l-4 border-foreground pl-6 py-2">
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2 block">Total Compensation</span>
+                <p className="text-3xl font-bold text-foreground">
                   {formattedCompensation}
                 </p>
               </div>
             </div>
           </div>
+
+
+          {/* Misconduct Records — opens a Google Pinpoint search keyed by the
+              officer's badge number. Per Ben: Pinpoint OCRs the source documents
+              and searches arbitrary terms, but the NSP database button should
+              specifically pass the badge number so the search is tied to the
+              identifier on the officer's profile.
+              Hidden until VITE_MISCONDUCT_BASE_URL is set in the deployment env.
+              Redacted records and REDACTED-NNN placeholder badges are excluded. */}
+          {(() => {
+            const isRedacted = /^X+$/i.test(person.last_name || '');
+            const badge = person.badge_number;
+            const isPlaceholderBadge = badge && /^REDACTED-/i.test(badge);
+            if (!MISCONDUCT_BASE_URL || !badge || isRedacted || isPlaceholderBadge) return null;
+            const sep = MISCONDUCT_BASE_URL.includes('?') ? '&' : '?';
+            return (
+              <div className="p-8 border-t border-border">
+                <a
+                  href={`${MISCONDUCT_BASE_URL}${sep}q=${encodeURIComponent(badge)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90 px-6 py-3 rounded-md font-medium transition-colors"
+                >
+                  <FileSearch size={20} />
+                  Search Misconduct Records
+                </a>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -295,12 +369,12 @@ const ProfileDetails = () => {
           <div className="relative">
             <button
               onClick={() => setIsImageZoomed(false)}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+              className="absolute -top-12 right-0 text-foreground hover:text-muted-foreground transition-colors"
               aria-label="Close zoom view"
             >
               <X size={32} />
             </button>
-            <div className="bg-white p-3 rounded-lg shadow-2xl">
+            <div className="bg-card p-3 rounded-lg shadow-2xl">
               {photoUrl ? (
                 <img
                   src={photoUrl}
@@ -309,8 +383,8 @@ const ProfileDetails = () => {
                   style={{ minWidth: '320px', minHeight: '400px' }}
                 />
               ) : (
-                <div className="w-80 h-96 sm:w-96 sm:h-[480px] bg-black flex items-center justify-center rounded">
-                  <span className="text-white font-bold text-8xl">{initials}</span>
+                <div className="w-80 h-96 sm:w-96 sm:h-[480px] bg-secondary flex items-center justify-center rounded">
+                  <span className="text-foreground font-bold text-8xl">{initials}</span>
                 </div>
               )}
             </div>

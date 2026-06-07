@@ -83,10 +83,10 @@ export const useRosterUrlState = () => {
       lastName: getParam('lastName'),
       badgeNumber: getParam('badgeNumber'),
       page: parseInt(getParam('page', '1')) || 1,
-      pageSize: parseInt(getParam('pageSize', '25')) || 25,
+      pageSize: parseInt(getParam('pageSize', '24')) || 24,
       sortBy: getParam('sortBy', 'name') as 'name' | 'regular_pay' | 'overtime' | 'total_compensation',
       sortOrder: getParam('sortOrder', 'asc') as 'asc' | 'desc',
-      source: getParam('source', 'search') // 'search' or 'roster'
+      source: getParam('source', 'search') // 'search' | 'roster' | 'statistics'
     };
   }, [getParam]);
 
@@ -113,9 +113,18 @@ export const useRosterUrlState = () => {
 
   // Get return path from URL parameters
   const getReturnPath = useCallback((): string => {
-    const returnTo = getParam('returnTo');
+    const rawReturnTo = getParam('returnTo');
     const currentState = getRosterState();
-    
+
+    // Open-redirect guard: only honor same-origin relative paths. A free-form
+    // returnTo would let an attacker craft /profile/...?returnTo=https://evil.com
+    // and turn the Back button into a phishing redirect.
+    const returnTo = (rawReturnTo
+      && rawReturnTo.startsWith('/')
+      && !rawReturnTo.startsWith('//'))
+      ? rawReturnTo
+      : '';
+
     if (returnTo) {
       // Construct return URL with preserved state
       const params = new URLSearchParams();
@@ -123,7 +132,7 @@ export const useRosterUrlState = () => {
       if (currentState.lastName) params.set('lastName', currentState.lastName);
       if (currentState.badgeNumber) params.set('badgeNumber', currentState.badgeNumber);
       if (currentState.page > 1) params.set('page', String(currentState.page));
-      if (currentState.pageSize !== 25) params.set('pageSize', String(currentState.pageSize));
+      if (currentState.pageSize !== 24) params.set('pageSize', String(currentState.pageSize));
       if (currentState.sortBy !== 'name') params.set('sortBy', currentState.sortBy);
       if (currentState.sortOrder !== 'asc') params.set('sortOrder', currentState.sortOrder);
       if (currentState.source !== 'search') params.set('source', currentState.source);
@@ -133,7 +142,9 @@ export const useRosterUrlState = () => {
     }
     
     // Default fallback based on source
-    return currentState.source === 'roster' ? '/roster' : '/';
+    if (currentState.source === 'roster') return '/roster';
+    if (currentState.source === 'statistics') return '/statistics';
+    return '/';
   }, [getParam, getRosterState]);
 
   return {

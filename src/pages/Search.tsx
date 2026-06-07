@@ -9,6 +9,8 @@ import { useAdvancedPersonnel, PersonnelFilters } from "../hooks/useAdvancedPers
 import { useResponsivePlaceholder } from "../hooks/useResponsivePlaceholder";
 import { useRosterUrlState } from "../hooks/useUrlState";
 
+const misconductUrl = import.meta.env.VITE_MISCONDUCT_BASE_URL as string | undefined;
+
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { getPlaceholder } = useResponsivePlaceholder();
@@ -112,7 +114,7 @@ const Search = () => {
           sortBy: 'name',
           sortOrder: 'asc',
           page: 1,
-          pageSize: 25,
+          pageSize: 24,
         };
         setFilters(clearedFilters);
         // Clear URL state
@@ -190,7 +192,7 @@ const Search = () => {
       sortBy: 'name',
       sortOrder: 'asc',
       page: 1,
-      pageSize: 25,
+      pageSize: 24,
     };
     setFilters(clearedFilters);
     // Clear URL state
@@ -228,20 +230,24 @@ const Search = () => {
 
   // Main search interface
   return (
-    <div className="min-h-screen bg-background">
+    // Intentionally not min-h-screen here: when there's no active search, the page
+    // collapses to content height so the footer sits just below the search bar
+    // instead of leaving a tall gap. App.tsx's flex layout still pushes the footer
+    // to the bottom on longer pages (e.g., when search results render below).
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-4 sm:py-6">
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-2">No Secret Police</h1>
-          <p className="text-lg text-muted-foreground">A public records database</p>
+          <p className="text-lg text-muted-foreground">A public records database by Inadvertent.</p>
         </div>
 
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-2xl mx-auto mb-4">
           <div className="flex gap-2">
             <div className="flex-1 relative">
               <Input
                 type="text"
                 inputMode="search"
-                placeholder={getPlaceholder("First name, last name, or badge number", "First or Last Name or Badge #")}
+                placeholder={getPlaceholder("Enter a name or badge number to search for an officer", "Name or badge number")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -262,10 +268,40 @@ const Search = () => {
             <Button
               onClick={handleSearch}
               disabled={!searchQuery.trim()}
-              className="bg-inadvertent-yellow hover:bg-inadvertent-yellow-hover px-6 py-3"
+              className="bg-foreground text-background hover:bg-foreground/90 px-6 py-3"
             >
               <SearchIcon className="h-5 w-5" />
             </Button>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <Link
+              to="/roster"
+              className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
+            >
+              View full roster
+            </Link>
+            {misconductUrl && (
+              <>
+                <span aria-hidden>·</span>
+                <a
+                  href={misconductUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
+                >
+                  Search misconduct and use of force records
+                </a>
+              </>
+            )}
+            <span aria-hidden>·</span>
+            <a
+              href="https://www.google.com/maps/d/u/0/viewer?mid=1EwFeKUgF0puu7dpTqgAdXc_qfDawtuQ7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
+            >
+              View interactive zip codes map
+            </a>
           </div>
         </div>
 
@@ -297,19 +333,6 @@ const Search = () => {
           </div>
         )}
 
-        {!hasSearchCriteria && (
-          <div className="mt-8 text-center">
-            <p className="text-lg text-muted-foreground">
-              View full roster{" "}
-              <Link
-                to="/roster"
-                className="text-inadvertent-yellow hover:text-inadvertent-yellow-hover underline font-medium"
-              >
-                here
-              </Link>
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

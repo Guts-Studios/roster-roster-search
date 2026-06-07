@@ -20,8 +20,9 @@ const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.error('ERROR: DATABASE_URL environment variable is required');
-  console.error('Please set DATABASE_URL in your Railway environment variables');
-  process.exit(1);
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 }
 
 const pool = new Pool({
@@ -84,10 +85,15 @@ app.use('/api', apiRateLimit); // Apply rate limiting to all API routes
 // Serve static files from dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Filter applied to every listing endpoint to suppress fully-redacted personnel
+// (last_name="XXXXXXX") from the public-facing roster/search results. Direct profile
+// lookups by id still resolve so deep links keep working.
+const VISIBLE_FILTER = "is_current = true AND last_name NOT LIKE 'XXXX%'";
+
 // API Routes
 app.get('/api/personnel', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM personnel ORDER BY last_name ASC');
+    const result = await pool.query(`SELECT * FROM personnel WHERE ${VISIBLE_FILTER} ORDER BY last_name ASC`);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching personnel:', error);
@@ -95,9 +101,14 @@ app.get('/api/personnel', async (req, res) => {
   }
 });
 
+// :id is restricted to UUID format so future /api/personnel/<word> routes
+// can be added without being shadowed by this parameterized handler.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 app.get('/api/personnel/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    if (!UUID_RE.test(id)) return res.status(404).json({ error: 'Personnel not found' });
     const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Personnel not found' });
@@ -111,10 +122,12 @@ app.get('/api/personnel/:id', async (req, res) => {
 
 app.post('/api/personnel/search', async (req, res) => {
   try {
-    const { firstName, lastName, badgeNumber, division, sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
-    
+    const { firstName, lastName, badgeNumber, division, sortBy = 'name', sortOrder = 'asc' } = req.body;
+    const page = Math.max(1, parseInt(req.body.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.body.pageSize) || 20));
+
     // Build WHERE conditions and parameters
-    const whereConditions = [];
+    const whereConditions = ["is_current = true", "last_name NOT LIKE 'XXXX%'"];
     const queryParams = [];
     let paramCount = 0;
 
@@ -153,7 +166,7 @@ app.post('/api/personnel/search', async (req, res) => {
       queryParams.push(division);
     }
 
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const whereClause = `WHERE ${whereConditions.join(' AND ')}`;
 
     // Get total count for pagination
     const countQuery = `SELECT COUNT(*) FROM personnel ${whereClause}`;
@@ -173,16 +186,21 @@ app.post('/api/personnel/search', async (req, res) => {
       orderByClause = `ORDER BY regular_pay ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
     }
 
-    // Apply pagination
+    // Apply pagination with parameterized values
     const startIndex = (page - 1) * pageSize;
-    const paginationClause = `LIMIT ${pageSize} OFFSET ${startIndex}`;
+    paramCount++;
+    const limitParam = paramCount;
+    queryParams.push(pageSize);
+    paramCount++;
+    const offsetParam = paramCount;
+    queryParams.push(startIndex);
 
     // Build main query
     const mainQuery = `
       SELECT * FROM personnel
       ${whereClause}
       ${orderByClause}
-      ${paginationClause}
+      LIMIT $${limitParam} OFFSET $${offsetParam}
     `;
 
     const result = await pool.query(mainQuery, queryParams);
@@ -202,7 +220,7 @@ app.post('/api/personnel/search', async (req, res) => {
 
 app.get('/api/personnel-filter-options', async (req, res) => {
   try {
-    const result = await pool.query("SELECT DISTINCT division, classification FROM personnel WHERE division IS NOT NULL OR classification IS NOT NULL");
+    const result = await pool.query(`SELECT DISTINCT division, classification FROM personnel WHERE ${VISIBLE_FILTER} AND (division IS NOT NULL OR classification IS NOT NULL)`);
     
     const divisions = [...new Set(result.rows?.map(p => p.division).filter(Boolean))];
     const classifications = [...new Set(result.rows?.map(p => p.classification).filter(Boolean))];
@@ -239,13 +257,24 @@ app.post('/api/auth/verify', authRateLimit, async (req, res) => {
       return res.status(500).json({ error: 'Authentication configuration not found' });
     }
 
-    // Hash the input password with the same salt from environment variable
-    const salt = process.env.PASSWORD_SALT || 'watch_the_watchers_salt_2024';
+    // Hash the input password with the same salt from environment variable.
+    // The previous hardcoded fallback ("watch_the_watchers_salt_2024") is now
+    // permanently in git history along with the corresponding plaintext password,
+    // so we refuse to fall back to it. PASSWORD_SALT must be set in every env.
+    const salt = process.env.PASSWORD_SALT;
+    if (!salt) {
+      console.error('PASSWORD_SALT env var is not set; rejecting /auth/verify');
+      return res.status(503).json({ error: 'Authentication service unavailable' });
+    }
     const inputHash = await hashPassword(password, salt);
-    
-    // Compare hashes
-    const isValid = inputHash === result.rows[0].value;
-    
+
+    // Constant-time hash comparison — JS `===` short-circuits on first
+    // differing character and would leak hash bytes via response timing.
+    const crypto = await import('crypto');
+    const a = Buffer.from(inputHash, 'hex');
+    const b = Buffer.from(result.rows[0].value, 'hex');
+    const isValid = a.length === b.length && crypto.timingSafeEqual(a, b);
+
     res.json({ valid: isValid });
   } catch (error) {
     console.error('Error verifying password:', error);
@@ -255,10 +284,12 @@ app.post('/api/auth/verify', authRateLimit, async (req, res) => {
 
 app.post('/api/personnel/all', async (req, res) => {
   try {
-    const { sortBy = 'name', sortOrder = 'asc', page = 1, pageSize = 20 } = req.body;
-    
+    const { sortBy = 'name', sortOrder = 'asc' } = req.body;
+    const page = Math.max(1, parseInt(req.body.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.body.pageSize) || 20));
+
     // Get total count for pagination
-    const countResult = await pool.query('SELECT COUNT(*) as count FROM personnel');
+    const countResult = await pool.query(`SELECT COUNT(*) as count FROM personnel WHERE ${VISIBLE_FILTER}`);
     const totalCount = parseInt(countResult.rows[0].count) || 0;
 
     // Build the main query with sorting
@@ -278,6 +309,7 @@ app.post('/api/personnel/all', async (req, res) => {
     const startIndex = (page - 1) * pageSize;
     const query = `
       SELECT * FROM personnel
+      WHERE ${VISIBLE_FILTER}
       ${orderClause}
       LIMIT $1 OFFSET $2
     `;
@@ -297,37 +329,25 @@ app.post('/api/personnel/all', async (req, res) => {
   }
 });
 
-// Get single personnel by ID
-app.get('/api/personnel/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query('SELECT * FROM personnel WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Personnel not found' });
-    }
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error fetching personnel by id:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // Search personnel with simple search term
 app.post('/api/personnel/search-simple', async (req, res) => {
   try {
     const { searchTerm } = req.body;
-    
+
+    // Reject empty queries instead of dumping the entire visible roster.
+    // Callers that want the full list should use the paginated /personnel/all.
     if (!searchTerm?.trim()) {
-      const result = await pool.query('SELECT * FROM personnel ORDER BY last_name ASC');
-      return res.json(result.rows);
+      return res.status(400).json({ error: 'searchTerm is required' });
     }
 
     const searchPattern = `%${searchTerm}%`;
     const result = await pool.query(
       `SELECT * FROM personnel
-       WHERE last_name ILIKE $1
+       WHERE ${VISIBLE_FILTER} AND (
+          last_name ILIKE $1
           OR first_name ILIKE $1
           OR badge_number ILIKE $1
+       )
        ORDER BY last_name ASC`,
       [searchPattern]
     );
@@ -345,37 +365,64 @@ app.post('/api/personnel/stats', async (req, res) => {
     const { type, filters = {} } = req.body;
     
     if (type === 'top-salaries') {
-      const { limit = 50, division, classification, sortBy = 'total_compensation' } = filters;
-      
-      let whereClause = '';
+      const { division, classification, sortBy = 'total_compensation' } = filters;
+      const limit = Math.min(500, Math.max(1, parseInt(filters.limit) || 50));
+
+      // Restrict to currently-active officers — ranking by pay should reflect
+      // current employees, not departed ones whose 2025 numbers are partial-year.
+      // Inactive personnel can still be searched and have profile pages; they're
+      // just excluded from the analytics rankings.
+      let whereClause = VISIBLE_FILTER + ' AND is_active = true';
       const params = [];
       let paramCount = 0;
 
       if (division) {
-        whereClause += `division = $${++paramCount}`;
+        whereClause += ` AND division = $${++paramCount}`;
         params.push(division);
       }
-      
+
       if (classification) {
-        if (whereClause) whereClause += ' AND ';
-        whereClause += `classification = $${++paramCount}`;
+        whereClause += ` AND classification = $${++paramCount}`;
         params.push(classification);
       }
-      
+
+      // ORDER BY based on requested sort — without this the endpoint returned
+      // arbitrary rows, which made the "Top 10 by Overtime" card show mostly
+      // $0 entries because only ~4 of the random 10 had non-zero OT.
+      // For total_compensation, sum the fields in SQL so we sort canonically.
+      const orderClauses = {
+        total_compensation: '(COALESCE(regular_pay,0)+COALESCE(premiums,0)+COALESCE(overtime,0)+COALESCE(payout,0)+COALESCE(other_pay,0)+COALESCE(health_dental_vision,0)) DESC',
+        regular_pay: 'regular_pay DESC NULLS LAST',
+        overtime: 'overtime DESC NULLS LAST',
+        premiums: 'premiums DESC NULLS LAST',
+      };
+      // Explicit allowlist guard — sortBy is interpolated into the query
+      // string, so anything outside the known keys must be rejected, not
+      // silently coerced to a default.
+      if (!Object.prototype.hasOwnProperty.call(orderClauses, sortBy)) {
+        return res.status(400).json({ error: 'Invalid sortBy value' });
+      }
+      const orderBy = orderClauses[sortBy];
+
+      paramCount++;
+      params.push(limit);
+
       const query = `
         SELECT * FROM personnel
-        ${whereClause ? `WHERE ${whereClause}` : ''}
+        WHERE ${whereClause}
+        ORDER BY ${orderBy}
+        LIMIT $${paramCount}
       `;
 
       const result = await pool.query(query, params);
       res.json(result.rows);
-      
+
     } else if (type === 'aggregates') {
-      const result = await pool.query('SELECT * FROM personnel');
+      const result = await pool.query(`SELECT * FROM personnel WHERE ${VISIBLE_FILTER}`);
       res.json(result.rows);
-      
+
     } else if (type === 'unique-values') {
-      const result = await pool.query('SELECT DISTINCT division, classification FROM personnel');
+      const result = await pool.query(`SELECT DISTINCT division, classification FROM personnel WHERE ${VISIBLE_FILTER}`);
       res.json(result.rows);
       
     } else {
@@ -387,11 +434,19 @@ app.post('/api/personnel/stats', async (req, res) => {
   }
 });
 
-// Serve React app for all non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+// Serve React app for all non-API routes (not needed on Vercel)
+if (!process.env.VERCEL) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// Only start listener when running directly (not as Vercel serverless function)
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+// Export for Vercel serverless
+export default app;

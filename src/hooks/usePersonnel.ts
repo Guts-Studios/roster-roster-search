@@ -16,12 +16,16 @@ export const usePersonnelById = (id: string) => {
     queryKey: ["personnel", id],
     queryFn: async (): Promise<Personnel | null> => {
       if (!id) return null;
-      
+
       try {
         return await api.queryOne<Personnel>(`/personnel/${id}`);
       } catch (error) {
-        // Handle 404 or other errors
-        return null;
+        // 404 means not found — return null so UI shows "Profile Not Found"
+        if (error instanceof Error && error.message.includes('Not Found')) {
+          return null;
+        }
+        // Re-throw other errors so React Query surfaces them via the error state
+        throw error;
       }
     },
     enabled: !!id,

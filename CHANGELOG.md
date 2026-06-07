@@ -5,6 +5,207 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2026-06-04
+
+### Added
+- **`is_active` column**: New boolean on `personnel` distinguishing currently-employed
+  officers from departed ones. Populated by migration Phase G via Phase E's
+  union-find groups (with canonical-name fallback for non-current pre-Phase-E
+  rows). Used by the Data Analysis page and the `/api/personnel/stats`
+  top-salaries endpoint to exclude departed officers' partial-year pay.
+- **Misconduct Records integration**: Profile pages render a "Search Misconduct
+  Records" button (links to a Pinpoint collection with the officer's badge as
+  the query). Homepage shows a "Search misconduct and use of force records"
+  link to the bare collection. Both gated behind `VITE_MISCONDUCT_BASE_URL`.
+- **Support link**: Navbar item linking to ko-fi.com/inadvertent (external,
+  opens in a new tab).
+- **Smoke test suite**: `scripts/smoke-tests.cjs` runs ~41 assertions against
+  the configured DB in ~3 seconds — schema, record counts, migration
+  invariants, 10 specific known records, redacted-leak checks, photo
+  coverage, and per-endpoint data invariants. `npm test` runs against the
+  configured DB; `npm run test:prod` runs against the Vercel Production
+  Neon branch.
+- **Pre-commit hook**: `.githooks/pre-commit` runs the smoke tests whenever a
+  staged commit touches data-layer files (`server.js`, the migration scripts,
+  the schema SQL, the smoke tests themselves). Opt-in per clone via
+  `git config core.hooksPath .githooks`; pure UI/copy commits skip it.
+
+### Changed
+- **Data Analysis page** (formerly "Statistics"): rewritten to a single
+  ranked-pay list. Removed Summary cards, YoY increases/decreases, Top 10
+  Overtime, By Division, By Rank, Pay Distribution histogram. Sort dropdown
+  exposes Total, Regular Pay, Overtime, Premiums, Other Pay, Payout.
+  Server fetches all active officers (one page of 500); client paginates 10
+  per page. Linked from navbar as "Data Analysis."
+- **Profile back-button**: Remembers Data Analysis as a source so "Back to
+  Results" returns to `/statistics` when the user navigated from there.
+- **Auth comparison**: `/api/auth/verify` now uses `crypto.timingSafeEqual`
+  instead of `===` on the hash. `PASSWORD_SALT` is REQUIRED — the historic
+  fallback was burned in git history; the endpoint now returns 503 if the
+  env var is unset.
+- **Migration Phase G**: `is_active` is propagated through Phase E's
+  union-find groups instead of a global short-canonical equivalence class.
+  Previously, two different officers sharing first-name + first-surname-word
+  could both get is_active=true. The new logic delegates short-canonical
+  matching to Phase E (where it's vetted against the rest of the group's
+  evidence) and uses canonical-only matching for non-current pre-Phase-E
+  records.
+- **Migration Phase E**: Same-roster-year tiebreak is now deterministic
+  (`roster_year DESC`, then badge-present DESC, then `(last_name, first_name)`
+  lex), replacing the prior UUID-lexicographic tiebreak that produced
+  different winners across re-runs.
+
+### Removed
+- **Pay History section** and the Active/Departed pill from profile pages.
+- **Dead-code endpoints**: `/api/personnel/yoy-changes`, `/api/personnel/breakdowns`,
+  `/api/personnel/:id/history` (no UI consumer after the Data Analysis page
+  rewrite; the `:id/history` endpoint also had a canonical-key collision
+  bug and a full-table scan).
+- **Dead-code hooks**: `useYoYChanges`, `useBreakdowns`, `usePayHistory`.
+- **Canonical-name helpers in `server.js`**: only consumer was the deleted
+  `/history` endpoint.
+- **Double-sort in `useTopSalaries`**: the hook used to re-sort the response
+  after the server had already ordered it.
+- **Client-side `generatePasswordHash` / `hashPassword` in `src/utils/auth.ts`**:
+  baked the salt into the public bundle for no benefit.
+- **`getTotalCompensation` debug logging**: fired thousands of times per
+  Data Analysis sort recompute in dev.
+- **Legacy `.kilocode/rules/memory-bank/` NSP v2.0.0 files**: described a
+  Supabase architecture replaced at v3.0.0 and contained a burned plaintext
+  password.
+
+### Fixed / Security
+- **Open redirect on Back button**: `getReturnPath` in `useUrlState` now
+  only honors same-origin relative paths; previously `?returnTo=https://evil.com`
+  would let the profile Back link redirect off-site.
+- **`sortBy` injection guard**: `/api/personnel/stats` top-salaries now
+  rejects unknown `sortBy` values with 400 via an explicit `hasOwnProperty`
+  allowlist (previously fell through to a default, masking misuse).
+- **`/api/personnel/search-simple` empty-query dump**: returns 400 on empty
+  `searchTerm` instead of streaming the entire visible roster.
+
+## [5.0.0] - 2026-05-13
+
+Note: the 4.0.0 entry below describes a migration that was deployed, then rolled
+back before this branch ever shipped. The 5.0.0 changes are the actual deployed
+preview migration; the 4.0.0 scripts (`migrate-2026-schema.sql`,
+`migrate-2026-roster.cjs`, `rollback-2026.sql`) are superseded.
+
+### Added
+- **Unified 2025/2026 Migration**: New `scripts/migrate-2025-2026-data.cjs` takes
+  the pre-2026 baseline to a three-year versioned dataset (2024 + 2025 + 2026)
+  in one transaction. 1004 total rows, 447 `is_current=true` under a
+  latest-record-per-person rule.
+- **2025 Payroll Data**: Imported final 2025 payroll numbers (336 records),
+  joined to 2024 roster by name with middle-initial-stripping; preferred over
+  2024 carry-forward when populating 2026 records' payroll fields.
+- **2026 January Roster**: Imported `NSP_2026_SAPD_260114_ROSTER.xlsx` (350
+  records) including 31 redacted entries; 310 embedded photos extracted to
+  WebP via `sharp`. Includes `rank_title` (e.g. "Police Officer (Detective)")
+  in addition to the existing `classification` field.
+- **`payroll_year` column**: Tracks which year's payroll data each record
+  reflects. Surfaced on profile pages as a per-record disclaimer that reads
+  "Payroll data is current as of {year}" or "No payroll data available for
+  this record."
+- **DRY_RUN flag**: `DRY_RUN=1` (or `--dry-run`) on the migration script runs
+  the full transaction and then rolls back — safe preview before a real run.
+- **Cross-platform XLSX parsing**: `xlsx-helper.cjs` now uses `adm-zip`
+  instead of `powershell.exe`. Works on macOS/Linux/WSL.
+- **DB target safety**: `scripts/check-target-db.cjs` distinguishes Neon Dev
+  branch (safe iteration) from Neon Prod branch (affects deployed preview)
+  before any destructive run.
+- **Vercel Production wrapper**: `scripts/run-against-vercel-prod.ps1` pulls
+  the Production env from Vercel CLI, sets `DATABASE_URL` inline, runs any
+  script against the Neon Prod branch, then cleans up. Stores the temp env
+  file in the OS temp dir (not the repo) so an interrupted run can't leave
+  credentials in the git tree.
+- **Verification invariants**: `scripts/verify-migration.cjs` asserts two SQL
+  invariants — for every named person, `is_current=true` is on the row with
+  the highest `roster_year`; and `payroll_year` is set if and only if at
+  least one pay field is non-null.
+
+### Changed
+- **`is_current` rule**: One `is_current=true` row per unique stripped name
+  (latest year wins) rather than one full year being current. The site
+  surfaces ~447 records — the most current record for each person across all
+  three years.
+- **`is_current` column default**: now `false` (was `true`) so the schema
+  migration can't accidentally leave everyone marked current if the data
+  migration doesn't run.
+- **Phase B classification normalization**: 2025 records use `baseRank()` to
+  strip parenthesized qualifiers like "(Temp Up)" / "(RM)" before insert,
+  matching 2024 conventions.
+- **Photo-resolution effect** (ProfileCard, ProfileDetails): probes all URL
+  variations in parallel via `Promise.any()` with cancellation cleanup,
+  replacing the sequential per-variation waterfall.
+- **About page copy**: payroll currency is described per-record (range
+  2024–2025) rather than a single static year.
+- **Profile error copy**: replaced misleading "Access Denied — You need to
+  be authenticated" with neutral "Unable to load record" (this is a public
+  tool with no auth wall).
+- **Height display**: stored as 3-digit strings ("511", "601") and formatted
+  to `5'11"`, `6'1"` at render time.
+- **`.gitignore`**: hardened with `.env`, `.env.local`, `.env.production`,
+  `.env*.local`, `.env.vercel*`, `.vercel`, and `.claude/`. Untracked the
+  previously-tracked `.claude/settings.local.json`.
+
+### Fixed
+- **SPA reload 404**: `vercel.json` now adds a filesystem handler + fallback
+  to `index.html` so React Router routes survive a hard reload at any URL.
+- **Migration idempotency**: Phase A wipes pre-existing 2025/2026 rows before
+  re-insert; the script is safe to re-run against any prior state.
+- **Batched inserts**: ~700 sequential `INSERT` round-trips collapsed to ~7
+  multi-row inserts (~10s wall-clock savings on Neon).
+- **Zip-slip guard**: `readImageAnchors` validates that resolved image paths
+  stay within the extracted directory before `sharp` opens them.
+- **PowerShell wrapper**: validates `$LASTEXITCODE` after `vercel env pull`
+  instead of suppressing output; constrains script path to `scripts/`
+  prefix.
+- **Phase D partition key**: matches JS `norm()`/`stripMiddle()` exactly
+  (collapse internal whitespace) so name-key fragmentation can't cause
+  duplicate `is_current` rows.
+
+### Technical
+- New partial expression index `idx_personnel_name_stripped` matching the
+  Phase D `PARTITION BY` for scale.
+- `package.json`: added `adm-zip` runtime dependency.
+- Source data files added: `NSP_2026_SAPD_260114_ROSTER.xlsx`,
+  `NSP_SAPD_2025_PAYROLL - SAPD_2025_PAYROLL.csv`. The older
+  `NSP_UPDATE_SAPD_202603 - MASTER.csv` is preserved for archival only and is
+  NOT consumed by the current migration.
+
+## [4.0.0] - 2026-02-23
+
+### Added
+- **2026 Roster Migration**: Migrated 350 personnel records from March 2026 SAPD roster data
+- **Historical Versioning**: Added `roster_year` and `is_current` columns for year-over-year data retention
+- **Demographic Fields**: Added gender, ethnicity, height, weight, and year of hire to personnel records
+- **Personal Details Section**: New section on profile pages displaying demographic information
+- **69 New Photos**: Extracted and converted personnel photos from roster spreadsheet (WebP format)
+- **CSV Header Validation**: Migration script now validates expected column headers before processing
+- **Migration Scripts**: `scripts/migrate-2026-schema.sql` and `scripts/migrate-2026-roster.cjs` for reproducibility
+
+### Changed
+- **API Endpoints**: All query endpoints now filter by `is_current = true` to show only current roster
+- **Disclaimers**: Profile cards and detail pages now differentiate roster year vs payroll year
+- **Profile Cards**: Consistent card heights with flex layout; proper number formatting with commas
+- **About Page**: Removed embedded search functionality (dead code cleanup); page is now static content only
+- **About Page**: Updated one-time donation link to Ko-fi (`ko-fi.com/inadvertent`)
+- **About Page**: Updated data currency text to reflect 2026 roster / 2024 payroll
+
+### Fixed
+- **Security**: Parameterized LIMIT/OFFSET in search endpoint to prevent DoS via unbounded queries
+- **Security**: Removed duplicate `GET /api/personnel/:id` route (dead code)
+- **Error Handling**: `usePersonnelById` now properly surfaces server errors instead of swallowing them
+- **Number Formatting**: Base Pay and Overtime display with proper comma separators
+- **Accessibility**: Fixed inverted h2/h3 heading hierarchy on profile details page
+- **Type Safety**: Added `Number()` coercion for pay field visibility guards (handles string DB values)
+
+### Technical
+- 318 historical (2024) records preserved with `is_current=false`
+- Composite unique constraint on `(badge_number, roster_year)` supports multi-year data
+- 10 existing PNG photos converted to WebP for consistency
+
 ## [3.0.0] - 2025-08-05
 
 ### 🚀 MAJOR: Database Migration to Railway PostgreSQL
